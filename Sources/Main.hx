@@ -8,7 +8,7 @@ import kha.System;
 import kha.System.SystemOptions;
 import kha.FramebufferOptions;
 import kha.WindowOptions;
-import states.Menu;
+import states.StartingMenu;
 
 class Main {
     public static function main() {
@@ -17,7 +17,7 @@ class Main {
 			var windowsOptions=new WindowOptions("Obligatorio2",0,0,1280,720,null,true,WindowFeatures.FeatureResizable,WindowMode.Windowed);
 		var frameBufferOptions=new FramebufferOptions();
 		System.start(new SystemOptions("Obligatorio2",1280,720,windowsOptions,frameBufferOptions), function (w) {
-			new Simulation(Menu,1280,720);
+			new Simulation(StartingMenu,1280,720);
 			Assets.loadEverything(function() {});
         });
     }

@@ -3,8 +3,6 @@ package states;
 import kha.audio1.AudioChannel;
 import kha.Color;
 import kha.input.KeyCode;
-import kha.Window;
-import haxe.macro.Expr.Case;
 import com.gEngine.display.Text;
 import com.loading.Resources;
 import com.gEngine.display.StaticLayer;
@@ -18,7 +16,7 @@ import com.framework.utils.Random;
 import com.framework.utils.State;
 import com.gEngine.helper.RectangleDisplay;
 
-class Menu extends State {
+class StartingMenu extends State {
 	var layer:Layer;
 	var rectangle:RectangleDisplay;
 	var start:Text;
@@ -94,7 +92,7 @@ class Menu extends State {
 
 	inline function reset() {
 		if (Input.i.isKeyCodePressed(KeyCode.Escape)) {
-			changeState(new Menu());
+			changeState(new StartingMenu());
 		}
 	}
 

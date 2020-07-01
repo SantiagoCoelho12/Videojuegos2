@@ -1,6 +1,5 @@
 package states;
 
-import com.collision.platformer.Tilemap;
 import kha.Assets;
 import com.loading.basicResources.JoinAtlas;
 import com.loading.basicResources.DataLoader;
@@ -10,8 +9,8 @@ import com.loading.Resources;
 import com.framework.utils.State;
 
 class GameState extends State {
-	var worldMap:Tilemap;
-	var simulationLayer:Layer;
+	//var worldMap:Tilemap;
+	//var simulationLayer:Layer;
 
 
 	override function load(resources:Resources) {
@@ -20,13 +19,13 @@ class GameState extends State {
 	}
 
 	override function init() {
-		worldMap = new Tilemap("lvl1_tmx", 1);
+		/*worldMap = new Tilemap("lvl1_tmx", 1);
 		worldMap.init(function(layerTilemap, tileLayer) {
 			if (!tileLayer.properties.exists("noCollision")) {
 				layerTilemap.createCollisions(tileLayer);
 			}
 			simulationLayer.addChild(layerTilemap.createDisplay(tileLayer, new Sprite("tiles2")));
-		}, parseMapObjects);
+		}, parseMapObjects);*/
 	}
 
 	override function update(dt:Float) {
@@ -40,7 +39,7 @@ class GameState extends State {
 
 	inline function reset() {
 		if (Input.i.isKeyCodePressed(KeyCode.Escape)) {
-			changeState(new Menu());
+			changeState(new StartingMenu());
 		}
 	}
 }
