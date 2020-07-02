@@ -7,11 +7,12 @@ import kha.input.KeyCode;
 import com.framework.utils.Input;
 import com.loading.Resources;
 import com.framework.utils.State;
+import com.collision.platformer.Tilemap;
+import com.gEngine.display.Layer;
 
 class GameState extends State {
-	//var worldMap:Tilemap;
-	//var simulationLayer:Layer;
-
+	var worldMap:Tilemap;
+	var simulationLayer:Layer;
 
 	override function load(resources:Resources) {
 		resources.add(new DataLoader(Assets.blobs.lvl1_tmxName));
@@ -20,11 +21,11 @@ class GameState extends State {
 
 	override function init() {
 		/*worldMap = new Tilemap("lvl1_tmx", 1);
-		worldMap.init(function(layerTilemap, tileLayer) {
-			if (!tileLayer.properties.exists("noCollision")) {
-				layerTilemap.createCollisions(tileLayer);
-			}
-			simulationLayer.addChild(layerTilemap.createDisplay(tileLayer, new Sprite("tiles2")));
+			worldMap.init(function(layerTilemap, tileLayer) {
+				if (!tileLayer.properties.exists("noCollision")) {
+					layerTilemap.createCollisions(tileLayer);
+				}
+				simulationLayer.addChild(layerTilemap.createDisplay(tileLayer, new Sprite("tiles2")));
 		}, parseMapObjects);*/
 	}
 
