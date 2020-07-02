@@ -4,6 +4,7 @@ project.addShaders('Shaders/**');
 project.addSources('Sources');
 project.addLibrary('tiled');
 project.addDefine('debugInfo');
+project.addDefine('DEBUGDRAW');
 await project.addProject('khawy');
 project.addDefine('analyzer-optimize');
 project.addParameter('-dce full');

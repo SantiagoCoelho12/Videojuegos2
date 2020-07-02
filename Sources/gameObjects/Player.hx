@@ -1,5 +1,7 @@
 package gameObjects;
 
+import com.gEngine.display.Sprite;
+import com.collision.platformer.CollisionBox;
 import com.framework.utils.Entity;
 import com.gEngine.display.Layer;
 import kha.math.FastVector2;
@@ -7,34 +9,70 @@ import kha.input.KeyCode;
 import com.framework.utils.Input;
 
 class Player extends Entity {
-    static private inline var SPEED:Float = 250;
+	static private inline var SPEED:Float = 150;
+	static private inline var GRAVITY:Float = 10;
 
 	var currentLayer:Layer;
-    var direction:FastVector2;
-    var isJumping:Bool = false;
+	var direction:FastVector2;
+	var isJumping:Bool = false;
+	var display:Sprite;
+	var velocity:FastVector2;
+
+	public var collision:CollisionBox;
 
 	public function new(X:Float = 0, Y:Float = 0, layer:Layer) {
-        super();
-        direction=new FastVector2(0,1);
+		super();
+		direction = new FastVector2(0, 1);
+		display = new Sprite("player");
+		collision = new CollisionBox();
+		velocity = new FastVector2(SPEED, SPEED);
+		display.timeline.playAnimation("idle");
+		display.timeline.frameRate = 1 / 7;
+		display.pivotX = display.width() * 0.5;
+		display.pivotY = display.height();
+		display.offsetX = -25;
+		display.offsetY = -5;
+		collision.width = 50;
+		collision.height = 37;
+		collision.x = X;
+		collision.y = Y;
+		layer.addChild(display);
 	}
 
 	override function update(dt:Float):Void {
-        super.update(dt);
-        movement();
- 
-    }
-    
-    private inline function movement() {
-        if(Input.i.isKeyCodeDown(KeyCode.A)){
-			//collision.velocityX=-SPEED;
-		}
-		if(Input.i.isKeyCodeDown(KeyCode.D)){
-			//collision.velocityX=SPEED;
-        }
-        if(Input.i.isKeyCodeDown(KeyCode.W) && !isJumping){
-			//jump
-		}
-    }
+		super.update(dt);
+		movement();
+		velocity.y += GRAVITY * dt;
+		collision.y += velocity.y * dt;
+		collision.width = 16;
+		collision.height = 30;
+		collision.update(dt);
+	}
 
-	override function render() {}
+	private inline function movement() {
+		if (Input.i.isKeyCodeDown(KeyCode.A)) {
+			collision.velocityX = -SPEED;
+		}
+		if (Input.i.isKeyCodeDown(KeyCode.D)) {
+			collision.velocityX = SPEED;
+		}
+		if (Input.i.isKeyCodeDown(KeyCode.W) && !isJumping) {
+			
+		}
+		if (collision.velocityX != 0 || collision.velocityY != 0) {
+			direction.setFrom(new FastVector2(collision.velocityX, collision.velocityY));
+			direction.setFrom(direction.normalized());
+		} else {
+			if (Math.abs(direction.x) > Math.abs(direction.y)) {
+				direction.y = 0;
+			} else {
+				direction.x = 0;
+			}
+		}
+	}
+
+	override function render() {
+		display.x = collision.x + collision.width * 0.5;
+		display.y = collision.y;
+	}
 }
