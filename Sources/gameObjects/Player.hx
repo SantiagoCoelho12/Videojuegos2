@@ -9,7 +9,7 @@ import kha.input.KeyCode;
 import com.framework.utils.Input;
 
 class Player extends Entity {
-	static private inline var SPEED:Float = 150;
+	static private inline var SPEED:Float = 100;
 	static private inline var GRAVITY:Float = 10;
 
 	var currentLayer:Layer;
@@ -32,8 +32,10 @@ class Player extends Entity {
 		display.pivotY = display.height();
 		display.offsetX = -25;
 		display.offsetY = -5;
-		collision.width = 50;
-		collision.height = 37;
+		collision.accelerationY = 800;
+		collision.maxVelocityY = 800;
+		collision.width = 16;
+		collision.height = 30;
 		collision.x = X;
 		collision.y = Y;
 		layer.addChild(display);
@@ -42,22 +44,20 @@ class Player extends Entity {
 	override function update(dt:Float):Void {
 		super.update(dt);
 		movement();
-		velocity.y += GRAVITY * dt;
-		collision.y += velocity.y * dt;
-		collision.width = 16;
-		collision.height = 30;
 		collision.update(dt);
 	}
 
 	private inline function movement() {
+		collision.velocityX=0;
 		if (Input.i.isKeyCodeDown(KeyCode.A)) {
 			collision.velocityX = -SPEED;
 		}
 		if (Input.i.isKeyCodeDown(KeyCode.D)) {
 			collision.velocityX = SPEED;
 		}
-		if (Input.i.isKeyCodeDown(KeyCode.W) && !isJumping) {
-			
+		if (Input.i.isKeyCodePressed(KeyCode.W) && !isJumping) {
+			collision.velocityY = -350;
+			//isJumping=true;
 		}
 		if (collision.velocityX != 0 || collision.velocityY != 0) {
 			direction.setFrom(new FastVector2(collision.velocityX, collision.velocityY));
