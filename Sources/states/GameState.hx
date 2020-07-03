@@ -1,5 +1,6 @@
 package states;
 
+import js.html.Audio;
 import kha.audio1.AudioChannel;
 import js.html.Console;
 import com.collision.platformer.ICollider;
@@ -20,6 +21,7 @@ import com.framework.utils.State;
 import com.collision.platformer.Tilemap;
 import com.gEngine.display.Layer;
 import com.gEngine.display.Sprite;
+import GlobalGameData.GGD;
 import com.loading.basicResources.TilesheetLoader;
 import format.tmx.Data.TmxObject;
 
@@ -29,23 +31,26 @@ class GameState extends State {
 	var player:Player;
 	var spawnX:Float;
 	var spawnY:Float;
+	var audio:AudioChannel;
 
 	override function load(resources:Resources) {
 		resources.add(new DataLoader(Assets.blobs.lvl1_tmxName));
-		var atlas:JoinAtlas = new JoinAtlas(12048, 12048);
+		var atlas:JoinAtlas = new JoinAtlas(4000, 4000);
 		atlas.add(new TilesheetLoader("lvl1ground", 16, 16, 0));
 		atlas.add(new ImageLoader("lvl1Background"));
+		atlas.add(new ImageLoader("bullet"));
 		atlas.add(new SpriteSheetLoader("player", 50, 37, 0, [
 			Sequence.at("idle", 0, 3), Sequence.at("run", 8, 13), Sequence.at("jump", 15, 17), Sequence.at("sword", 42, 48), Sequence.at("sword2", 49, 52),
-			Sequence.at("sword3", 53, 58), Sequence.at("power", 85, 91), Sequence.at("dead", 65, 68), Sequence.at("power2", 102, 108),
+			Sequence.at("sword3", 53, 58), Sequence.at("power", 89, 91), Sequence.at("dead", 65, 68), Sequence.at("power2", 102, 108),
 			Sequence.at("fall", 22, 23)]));
 		resources.add(atlas);
 	}
 
 	override function init() {
 		loadBackground();
-		var beep:AudioChannel = kha.audio1.Audio.play(Assets.sounds.FOREST,true);
+		audio = kha.audio1.Audio.play(Assets.sounds.FOREST,true); // meter en background con lvl 1
 		simulationLayer = new Layer();
+		GGD.simulationLayer = simulationLayer;
 		stage.addChild(simulationLayer);
 		worldMap = new Tilemap("lvl1_tmx", 1);
 		worldMap.init(function(layerTilemap, tileLayer) {
@@ -71,8 +76,10 @@ class GameState extends State {
 
 	override function update(dt:Float) {
 		super.update(dt);
-		stage.defaultCamera().setTarget(player.collision.x, player.collision.y - 100);
+		stage.defaultCamera().setTarget(player.collision.x, player.collision.y - 133);
 		CollisionEngine.collide(player.collision, worldMap.collision);
+		CollisionEngine.overlap(player.gun.bulletsCollisions, worldMap.collision);
+		CollisionEngine.overlap(player.sword.collision, worldMap.collision);
 		reset();
 	}
 
@@ -82,6 +89,7 @@ class GameState extends State {
 
 	inline function reset() {
 		if (Input.i.isKeyCodePressed(KeyCode.Escape)) {
+			audio.stop();
 			changeState(new StartingMenu());
 		}
 	}

@@ -1,5 +1,8 @@
 package gameObjects;
 
+import kha.Assets;
+import kha.audio1.AudioChannel;
+import js.html.Audio;
 import com.g3d.OgexData.Key;
 import com.collision.platformer.Sides;
 import com.gEngine.display.Sprite;
@@ -19,8 +22,11 @@ class Player extends Entity {
 	var direction:FastVector2;
 	var display:Sprite;
 	var velocity:FastVector2;
+	var attacking:Bool = false;
+	var weaponSelection:Float = 1;
 
-	public var isJumping:Bool = false;
+	public var sword:Sword;
+	public var gun:Gun;
 	public var collision:CollisionBox;
 
 	public function new(X:Float = 0, Y:Float = 0, layer:Layer) {
@@ -29,8 +35,8 @@ class Player extends Entity {
 		display = new Sprite("player");
 		collision = new CollisionBox();
 		velocity = new FastVector2(SPEED, SPEED);
-		display.timeline.playAnimation("idle");
-		display.timeline.frameRate = 1 / 7;
+		gun = new Gun();
+		sword = new Sword();
 		display.pivotX = display.width() * 0.5;
 		display.pivotY = display.height();
 		display.offsetX = -25;
@@ -62,6 +68,26 @@ class Player extends Entity {
 		if (Input.i.isKeyCodePressed(KeyCode.W) && collision.isTouching(Sides.BOTTOM)) {
 			collision.velocityY = JUMP;
 		}
+		if (Input.i.isKeyCodePressed(KeyCode.One)) {
+			weaponSelection = 1;
+		}
+		if (Input.i.isKeyCodePressed(KeyCode.Two)) {
+			weaponSelection = 2;
+		}
+		if (Input.i.isMousePressed()) {
+			if (weaponSelection == 2) {
+				gun.shoot(collision.x, collision.y, direction.x, -direction.y);
+				attacking = true;
+			}
+		} else if (Input.i.isMouseDown()) {
+			if (weaponSelection == 1) {
+				sword.attack(collision.x + collision.width, collision.y, display.scaleX);
+				attacking = true;
+			}
+		} else {
+			attacking = false;
+			sword.endAttack();
+		}
 		if (Input.i.isKeyCodeDown(KeyCode.Shift)) {
 			if (collision.isTouching(Sides.BOTTOM))
 				SPEED = 210;
@@ -70,22 +96,30 @@ class Player extends Entity {
 			SPEED = 100;
 			JUMP = -350;
 		}
-		/*if (collision.velocityX != 0 || collision.velocityY != 0) {
-				direction.setFrom(new FastVector2(collision.velocityX, collision.velocityY));
-				direction.setFrom(direction.normalized());
+		if (collision.velocityX != 0 || collision.velocityY != 0) {
+			direction.setFrom(new FastVector2(collision.velocityX, collision.velocityY));
+			direction.setFrom(direction.normalized());
+		} else {
+			if (Math.abs(direction.x) > Math.abs(direction.y)) {
+				direction.y = 0;
 			} else {
-				if (Math.abs(direction.x) > Math.abs(direction.y)) {
-					direction.y = 0;
-				} else {
-					direction.x = 0;
-				}
-		}*/
+				direction.x = 0;
+			}
+		}
 	}
 
 	override function render() {
 		display.x = collision.x + collision.width * 0.5;
 		display.y = collision.y;
-		if (collision.isTouching(Sides.BOTTOM) && collision.velocityX == 0) {
+
+		display.timeline.frameRate = 1 / 7;
+		if (attacking) {
+			if (weaponSelection == 1)
+				display.timeline.playAnimation("sword");
+			if (weaponSelection == 2)
+				display.timeline.playAnimation("power");
+			display.timeline.frameRate = 1 / 15;
+		} else if (collision.isTouching(Sides.BOTTOM) && collision.velocityX == 0) {
 			display.timeline.playAnimation("idle");
 		} else if (collision.isTouching(Sides.BOTTOM) && collision.velocityX != 0) {
 			display.timeline.playAnimation("run");

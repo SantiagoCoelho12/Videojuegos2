@@ -47,7 +47,7 @@ class StartingMenu extends State {
 		var instructions = new Text(Assets.fonts.GalaxyName);
 		instructions.x = GEngine.virtualWidth * 0.6;
 		instructions.y = GEngine.virtualHeight * 0.4;
-		instructions.text = "How to play:\n\n\n Move - WASD \n\n Jump - Space \n\n Hit - Right click";
+		instructions.text = "How to play:\n\n\n Move - A W D \n\n RUN - Shift \n\n Hit - Right click\n\n Change Weapon - 1 2";
 		layer.addChild(instructions);
 		stage.addChild(layer);
 	}
