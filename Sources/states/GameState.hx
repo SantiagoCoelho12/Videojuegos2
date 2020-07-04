@@ -1,5 +1,7 @@
 package states;
 
+import com.gEngine.display.StaticLayer;
+import com.gEngine.GEngine;
 import js.html.Audio;
 import kha.audio1.AudioChannel;
 import js.html.Console;
@@ -28,10 +30,12 @@ import format.tmx.Data.TmxObject;
 class GameState extends State {
 	var worldMap:Tilemap;
 	var simulationLayer:Layer;
+	var hudLayer:Layer;
 	var player:Player;
 	var spawnX:Float;
 	var spawnY:Float;
 	var audio:AudioChannel;
+	var heart:Sprite;
 
 	override function load(resources:Resources) {
 		resources.add(new DataLoader(Assets.blobs.lvl1_tmxName));
@@ -39,6 +43,8 @@ class GameState extends State {
 		atlas.add(new TilesheetLoader("lvl1ground", 16, 16, 0));
 		atlas.add(new ImageLoader("lvl1Background"));
 		atlas.add(new ImageLoader("bullet"));
+		atlas.add(new ImageLoader("heart"));
+		atlas.add(new ImageLoader("sword"));
 		atlas.add(new SpriteSheetLoader("player", 50, 37, 0, [
 			Sequence.at("idle", 0, 3), Sequence.at("run", 8, 13), Sequence.at("jump", 15, 17), Sequence.at("sword", 42, 48), Sequence.at("sword2", 49, 52),
 			Sequence.at("sword3", 53, 58), Sequence.at("power", 89, 91), Sequence.at("dead", 65, 68), Sequence.at("power2", 102, 108),
@@ -48,7 +54,7 @@ class GameState extends State {
 
 	override function init() {
 		loadBackground();
-		audio = kha.audio1.Audio.play(Assets.sounds.FOREST,true); // meter en background con lvl 1
+		audio = kha.audio1.Audio.play(Assets.sounds.FOREST, true); // meter en background con lvl 1
 		simulationLayer = new Layer();
 		GGD.simulationLayer = simulationLayer;
 		stage.addChild(simulationLayer);
@@ -59,10 +65,11 @@ class GameState extends State {
 			}
 			simulationLayer.addChild(layerTilemap.createDisplay(tileLayer, new Sprite("lvl1ground")));
 		}, parseMapObjects);
-		
+
 		stage.defaultCamera().limits(0, 0, worldMap.widthIntTiles * 32, (worldMap.heightInTiles * 32));
 		player = new Player(35, 415, simulationLayer);
 		addChild(player);
+		setHUD();
 		stage.defaultCamera().scale = 2;
 	}
 
@@ -74,13 +81,28 @@ class GameState extends State {
 		stage.addChild(backgraundLayer);
 	}
 
+	inline function setHUD() {
+		hudLayer = new StaticLayer();
+		stage.addChild(hudLayer);
+		heart = new Sprite("heart");
+		heart.scaleX = heart.scaleY = 0.27;
+		heart.x = GEngine.virtualWidth * 0.005;
+		heart.y = GEngine.virtualHeight * 0.05;
+		hudLayer.addChild(heart);
+	}
+
 	override function update(dt:Float) {
 		super.update(dt);
+		updateHUD();
 		stage.defaultCamera().setTarget(player.collision.x, player.collision.y - 133);
 		CollisionEngine.collide(player.collision, worldMap.collision);
 		CollisionEngine.overlap(player.gun.bulletsCollisions, worldMap.collision);
 		CollisionEngine.overlap(player.sword.collision, worldMap.collision);
 		reset();
+	}
+
+	inline function updateHUD() {
+
 	}
 
 	override function render() {
@@ -109,9 +131,9 @@ class GameState extends State {
 			case OTRectangle:
 				if (object.type == "spawn") {
 					/*var x = object.properties.get("X");
-					var y = object.properties.get("Y");
-					spawnX = Std.parseFloat(x);
-					spawnY = Std.parseFloat(y);*/
+						var y = object.properties.get("Y");
+						spawnX = Std.parseFloat(x);
+						spawnY = Std.parseFloat(y); */
 				}
 			default:
 		}

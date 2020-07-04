@@ -27,6 +27,7 @@ class Player extends Entity {
 
 	public var sword:Sword;
 	public var gun:Gun;
+	public var hitPoints:Int = 5;
 	public var collision:CollisionBox;
 
 	public function new(X:Float = 0, Y:Float = 0, layer:Layer) {
