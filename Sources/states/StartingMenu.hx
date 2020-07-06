@@ -1,5 +1,7 @@
 package states;
 
+import com.loading.basicResources.ImageLoader;
+import com.gEngine.display.Sprite;
 import kha.audio1.AudioChannel;
 import kha.Color;
 import kha.input.KeyCode;
@@ -24,32 +26,37 @@ class StartingMenu extends State {
 
 	override function load(resources:Resources) {
 		var atlas:JoinAtlas = new JoinAtlas(2048, 2048);
+		atlas.add(new ImageLoader("RUNZER"));
 		atlas.add(new FontLoader(Assets.fonts.GalaxyName, 40));
+		atlas.add(new FontLoader(Assets.fonts.ArialName, 23));
 		resources.add(atlas);
 	}
 
 	override function init() {
-		//////////////////////////////////////////////////
-		rectangle = new RectangleDisplay(); // sustituir por imagen o animacion
-		rectangle.setColor(255, 0, 0);
-		rectangle.scaleX = 600;
-		rectangle.scaleY = 150;
-		rectangle.x = GEngine.virtualWidth * 0.28;
-		rectangle.y = GEngine.virtualHeight * 0.1;
-		stage.addChild(rectangle);
-		//////////////////////////////////////////////////
+		logoImg();
 		layer = new StaticLayer();
 		start = new Text(Assets.fonts.GalaxyName);
-		start.x = GEngine.virtualWidth * 0.2;
-		start.y = GEngine.virtualHeight * 0.4;
+		start.x = GEngine.virtualWidth * 0.37;
+		start.y = GEngine.virtualHeight * 0.53;
 		start.text = "Start game";
 		layer.addChild(start);
-		var instructions = new Text(Assets.fonts.GalaxyName);
-		instructions.x = GEngine.virtualWidth * 0.6;
-		instructions.y = GEngine.virtualHeight * 0.4;
-		instructions.text = "How to play:\n\n\n Move - A W D \n\n RUN - Shift \n\n Hit - Right click\n\n Change Weapon - 1 2";
+		var instructions = new Text(Assets.fonts.ArialName);
+		instructions.x = GEngine.virtualWidth * 0.4;
+		instructions.y = GEngine.virtualHeight * 0.75;
+
+		instructions.text = "      HOW TO PLAY:\n\n       Move:  A W D \n         Run:  Shift \n     Hit:  Right click\n Change Weapon:  1 2";
+
 		layer.addChild(instructions);
 		stage.addChild(layer);
+	}
+
+	inline function logoImg() {
+		var image = new Sprite("RUNZER");
+		image.x = GEngine.virtualWidth * 0.72 - image.width() * 0.5;
+		image.y = 100;
+		image.scaleX = image.scaleY = 0.7;
+		image.offsetX = -100;
+		stage.addChild(image);
 	}
 
 	override function update(dt:Float) {
@@ -61,7 +68,7 @@ class StartingMenu extends State {
 				var beep:AudioChannel = kha.audio1.Audio.play(Assets.sounds.DECIDE);
 				soundFlag = false;
 			}
-			start.color = Color.Red;
+			start.color = Color.Green;
 			start.scaleX = 1.01;
 			start.scaleY = 1.01;
 			start.offsetX = -0.5;
@@ -71,7 +78,7 @@ class StartingMenu extends State {
 				changeState(new GameState());
 			}
 		} else {
-			start.color = Color.White;
+			start.color = Color.fromBytes(116, 132, 65);
 			soundFlag = true;
 			start.scaleX = 1;
 			start.scaleY = 1;
@@ -83,8 +90,8 @@ class StartingMenu extends State {
 
 	private function overStarText(x:Float, y:Float):Bool {
 		var flag:Bool = false;
-		var valuex:Float = GEngine.virtualWidth * 0.2;
-		var valuey:Float = GEngine.virtualHeight * 0.4;
+		var valuex:Float = GEngine.virtualWidth * 0.37;
+		var valuey:Float = GEngine.virtualHeight * 0.53;
 		if ((x >= valuex && x <= valuex + 290) && (y >= valuey && y <= valuey + 40))
 			flag = true;
 		return flag;
