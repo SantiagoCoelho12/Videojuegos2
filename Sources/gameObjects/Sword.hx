@@ -15,7 +15,7 @@ class Sword extends Entity {
 	public function new() {
 		super();
 		collision = new CollisionBox();
-		collision.width = 12;
+		collision.width = 15;
 		collision.height = 30;
 		collision.userData = this;
 	}

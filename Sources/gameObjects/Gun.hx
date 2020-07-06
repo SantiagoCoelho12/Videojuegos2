@@ -11,10 +11,6 @@ import com.collision.platformer.CollisionGroup;
 class Gun extends Entity {
 	public var bulletsCollisions:CollisionGroup;
 
-	var bullet:Bullet;
-	var beep:AudioChannel;
-	var laser:Sound;
-
 	public function new() {
 		super();
 		pool = true;
@@ -22,12 +18,7 @@ class Gun extends Entity {
 	}
 
 	public function shoot(aX:Float, aY:Float, dirX:Float, dirY:Float):Void {
-		bullet = cast recycle(Bullet);
+		var bullet:Bullet = cast recycle(Bullet);
 		bullet.shoot(aX, aY, dirX, dirY, bulletsCollisions);
-	}
-
-	public function reset() {
-		bullet = null;
-		bullet = cast recycle(Bullet);
 	}
 }

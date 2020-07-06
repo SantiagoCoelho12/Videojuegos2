@@ -12,22 +12,22 @@ class Bullet extends Entity {
 	var display:Sprite;
 	var counter:Float = 0;
 
-	static inline var MAX_COUNTER:Float = 2;
-	static inline var BALL_VELOCITY:Float = 700;
+	static inline var MAX_COUNTER:Float = 4;
+	static inline var BALL_VELOCITY:Float = 400;
 
 	public function new() {
 		super();
 
 		display = new Sprite("bullet");
 		collision = new CollisionBox();
-		collision.width = 27;
-		collision.height = 40;
+		collision.width =15;
+		collision.height = 4;
 
 		collision.userData = this;
 
-		display.scaleX = display.scaleY = 1;
-		display.offsetX = -4;
-		display.offsetY = -10;
+		display.scaleX = display.scaleY = 0.08;
+		//display.offsetY= -5;
+		display.offsetY= -1.5;
 	}
 
 	override function limboStart() {

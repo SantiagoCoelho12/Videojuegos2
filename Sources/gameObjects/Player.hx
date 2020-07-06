@@ -19,25 +19,26 @@ class Player extends Entity {
 	var SPEED:Float = 100;
 	var JUMP:Float = -350;
 	var currentLayer:Layer;
-	var direction:FastVector2;
 	var display:Sprite;
 	var velocity:FastVector2;
 	var attacking:Bool = false;
 	var weaponSelection:Float = 1;
 
+	public var mana:Int = 100;
 	public var sword:Sword;
 	public var gun:Gun;
-	public var hitPoints:Int = 5;
+	public var hearts:Int = 5;
 	public var collision:CollisionBox;
 
 	public function new(X:Float = 0, Y:Float = 0, layer:Layer) {
 		super();
-		direction = new FastVector2(0, 1);
 		display = new Sprite("player");
 		collision = new CollisionBox();
 		velocity = new FastVector2(SPEED, SPEED);
 		gun = new Gun();
+		addChild(gun);
 		sword = new Sword();
+		addChild(sword);
 		display.pivotX = display.width() * 0.5;
 		display.pivotY = display.height();
 		display.offsetX = -25;
@@ -49,6 +50,11 @@ class Player extends Entity {
 		collision.x = X;
 		collision.y = Y;
 		layer.addChild(display);
+	}
+
+	public function drinkPotion() {
+		mana += 30;
+		if (mana > 100) mana =100;
 	}
 
 	override function update(dt:Float):Void {
@@ -76,9 +82,10 @@ class Player extends Entity {
 			weaponSelection = 2;
 		}
 		if (Input.i.isMousePressed()) {
-			if (weaponSelection == 2) {
-				gun.shoot(collision.x, collision.y, direction.x, -direction.y);
+			if (weaponSelection == 2 && mana >= 20) {
+				gun.shoot(collision.x, collision.y, display.scaleX, 0);
 				attacking = true;
+				mana -= 20;
 			}
 		} else if (Input.i.isMouseDown()) {
 			if (weaponSelection == 1) {
@@ -96,16 +103,6 @@ class Player extends Entity {
 		} else {
 			SPEED = 100;
 			JUMP = -350;
-		}
-		if (collision.velocityX != 0 || collision.velocityY != 0) {
-			direction.setFrom(new FastVector2(collision.velocityX, collision.velocityY));
-			direction.setFrom(direction.normalized());
-		} else {
-			if (Math.abs(direction.x) > Math.abs(direction.y)) {
-				direction.y = 0;
-			} else {
-				direction.x = 0;
-			}
 		}
 	}
 
