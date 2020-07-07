@@ -1,5 +1,7 @@
 package states;
 
+import com.collision.platformer.CollisionGroup;
+import com.collision.platformer.CollisionBox;
 import com.loading.basicResources.FontLoader;
 import com.gEngine.display.Text;
 import gameObjects.Bullet;
@@ -13,6 +15,7 @@ import com.loading.basicResources.ImageLoader;
 import com.collision.platformer.CollisionEngine;
 import com.gEngine.helper.Screen;
 import gameObjects.Player;
+import gameObjects.Enemy;
 import com.loading.basicResources.SpriteSheetLoader;
 import com.gEngine.display.Blend;
 import com.gEngine.shaders.ShRetro;
@@ -43,6 +46,10 @@ class GameState extends State {
 	var fireBall:Sprite;
 	var manaCounter:Text;
 	var fireBallYLevitation:Float = 1;
+	var nextLvlCollision:CollisionGroup;
+	var manaCollision:CollisionGroup;
+	var manaPotion:Sprite;
+	var enemyCollision:CollisionGroup;
 
 	override function load(resources:Resources) {
 		resources.add(new DataLoader(Assets.blobs.lvl1_tmxName));
@@ -54,12 +61,25 @@ class GameState extends State {
 		atlas.add(new ImageLoader("heart"));
 		atlas.add(new ImageLoader("mana"));
 		atlas.add(new ImageLoader("sword"));
+		atlas.add(new ImageLoader("nextlvl"));
 		atlas.add(new ImageLoader("fireballHUD"));
 		atlas.add(new ImageLoader("hand"));
 		atlas.add(new SpriteSheetLoader("player", 50, 37, 0, [
 			Sequence.at("idle", 0, 3), Sequence.at("run", 8, 13), Sequence.at("jump", 15, 17), Sequence.at("sword", 42, 48), Sequence.at("sword2", 49, 52),
 			Sequence.at("sword3", 53, 58), Sequence.at("power", 89, 91), Sequence.at("dead", 65, 68), Sequence.at("power2", 102, 108),
 			Sequence.at("fall", 22, 23)]));
+		atlas.add(new SpriteSheetLoader("mushroom", 150, 75, 0, [
+			Sequence.at("run", 4, 11),
+			Sequence.at("idle", 12, 15),
+			Sequence.at("death", 16, 19),
+			Sequence.at("attack", 20, 27)
+		]));
+		atlas.add(new SpriteSheetLoader("skeleton", 154, 83, 0, [
+			Sequence.at("run", 0, 3),
+			Sequence.at("idle", 12, 15),
+			Sequence.at("death", 16, 19),
+			Sequence.at("attack", 20, 27)
+		]));
 		resources.add(atlas);
 	}
 
@@ -67,6 +87,7 @@ class GameState extends State {
 		loadBackground();
 		audio = kha.audio1.Audio.play(Assets.sounds.FOREST, true); // meter en background con lvl 1
 		simulationLayer = new Layer();
+		enemyCollision = new CollisionGroup();
 		GGD.simulationLayer = simulationLayer;
 		stage.addChild(simulationLayer);
 		worldMap = new Tilemap("lvl1_tmx", 1);
@@ -78,7 +99,7 @@ class GameState extends State {
 		}, parseMapObjects);
 
 		stage.defaultCamera().limits(0, 0, worldMap.widthIntTiles * 32, (worldMap.heightInTiles * 32));
-		player = new Player(35, 415, simulationLayer);
+		player = new Player(spawnX, spawnY, simulationLayer);
 		addChild(player);
 		setHUD();
 		stage.defaultCamera().scale = 2;
@@ -121,7 +142,7 @@ class GameState extends State {
 
 		fireBall = new Sprite("fireballHUD");
 		fireBall.scaleX = fireBall.scaleY = 0.036;
-		fireBall.x = GEngine.virtualWidth * 0.975;
+		fireBall.x = GEngine.virtualWidth * 0.974;
 		fireBall.y = GEngine.virtualHeight * 0.145;
 		hudLayer.addChild(fireBall);
 
@@ -151,6 +172,9 @@ class GameState extends State {
 		CollisionEngine.collide(player.collision, worldMap.collision);
 		CollisionEngine.collide(player.gun.bulletsCollisions, worldMap.collision, destroyBullet);
 		CollisionEngine.overlap(player.sword.collision, worldMap.collision);
+		CollisionEngine.collide(player.collision, nextLvlCollision, nextLvl);
+		CollisionEngine.collide(player.collision, manaCollision, manaPotionCollision);
+		CollisionEngine.collide(player.collision, enemyCollision);
 		reset();
 	}
 
@@ -160,6 +184,17 @@ class GameState extends State {
 			bullet.collision.y=-5000; */
 	}
 
+	public function nextLvl(a:ICollider, b:ICollider) {
+		audio.stop();
+		changeState(new StartingMenu());
+	}
+
+	public function manaPotionCollision(a:ICollider, b:ICollider) {
+		player.drinkPotion();
+		manaCollision.colliders.pop();
+		manaPotion.removeFromParent();
+	}
+
 	inline function updateHUD() {
 		fireBallLevitation();
 		arrowUpdate();
@@ -167,8 +202,8 @@ class GameState extends State {
 	}
 
 	inline function manaAndHeartsUpdate() {
-		heartCounter.text = player.hearts+"";
-		manaCounter.text = player.mana+"";
+		heartCounter.text = player.hearts + "";
+		manaCounter.text = player.mana + "";
 	}
 
 	inline function arrowUpdate() {
@@ -176,7 +211,7 @@ class GameState extends State {
 			arrow.y = GEngine.virtualHeight * 0.067;
 		}
 		if (Input.i.isKeyCodePressed(KeyCode.Two)) {
-			arrow.y = GEngine.virtualHeight * 0.145;
+			arrow.y = GEngine.virtualHeight * 0.16;
 		}
 	}
 
@@ -212,10 +247,49 @@ class GameState extends State {
 				simulationLayer.addChild(sprite); */
 			case OTRectangle:
 				if (object.type == "spawn") {
-					/*var x = object.properties.get("X");
-						var y = object.properties.get("Y");
-						spawnX = Std.parseFloat(x);
-						spawnY = Std.parseFloat(y); */
+					var x = object.properties.get("spawnX");
+					var y = object.properties.get("spawnY");
+					spawnX = Std.parseFloat(x);
+					spawnY = Std.parseFloat(y);
+				}
+				if (object.type == "nextLvl") {
+					var sign = new Sprite("nextlvl");
+					sign.scaleX = sign.scaleY = 0.05;
+					sign.y = object.y;
+					sign.x = object.x;
+					simulationLayer.addChild(sign);
+					var nextlvl = new CollisionBox();
+					nextLvlCollision = new CollisionGroup();
+					nextlvl.y = object.y;
+					nextlvl.height = object.height;
+					nextlvl.width = object.width;
+					nextlvl.x = object.x;
+					nextLvlCollision.add(nextlvl);
+				}
+				if (object.type == "enemy") {
+					var x = object.properties.get("spawnX");
+					var y = object.properties.get("spawnY");
+					var enemyTypeString = object.properties.get("type");
+					var eX = Std.parseFloat(x);
+					var eY = Std.parseFloat(y);
+					var enemyType = Std.parseFloat(enemyTypeString);
+					var enemy = new Enemy(eX, eY, enemyType, enemyCollision, simulationLayer);
+					addChild(enemy);
+				}
+				if (object.type == "mana") {
+					manaPotion = new Sprite("mana");
+					manaPotion.scaleX = manaPotion.scaleY = 0.05;
+					manaPotion.offsetX = manaPotion.offsetY = -3;
+					manaPotion.y = object.y;
+					manaPotion.x = object.x;
+					simulationLayer.addChild(manaPotion);
+					manaCollision = new CollisionGroup();
+					var manaPotionCollision = new CollisionBox();
+					manaPotionCollision.y = object.y;
+					manaPotionCollision.height = object.height;
+					manaPotionCollision.width = object.width;
+					manaPotionCollision.x = object.x;
+					manaCollision.add(manaPotionCollision);
 				}
 			default:
 		}

@@ -14,8 +14,6 @@ import kha.input.KeyCode;
 import com.framework.utils.Input;
 
 class Player extends Entity {
-	static private inline var GRAVITY:Float = 10;
-
 	var SPEED:Float = 100;
 	var JUMP:Float = -350;
 	var currentLayer:Layer;
@@ -53,7 +51,7 @@ class Player extends Entity {
 	}
 
 	public function drinkPotion() {
-		mana += 30;
+		mana += 50;
 		if (mana > 100) mana =100;
 	}
 
