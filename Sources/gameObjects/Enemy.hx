@@ -12,6 +12,7 @@ class Enemy extends Entity {
 	var display:Sprite;
 	var currentLayer:Layer;
 	var collisionGroup:CollisionGroup;
+	var shootCounter:Float;
 
 	public var collision:CollisionBox;
 	public var gun:Gun;
@@ -38,22 +39,44 @@ class Enemy extends Entity {
 	inline function setCollisions(X:Float, Y:Float, _type:Float) {
 		collision.x = X;
 		collision.y = Y;
+		collision.accelerationY = 800;
 		collision.userData = this;
-		if (type == 1) {} else {}
+		if (type == 1) {
+			collision.width = 17;
+			collision.height = 35;
+		} else {
+			collision.width = 17;
+			collision.height = 22;
+		}
 	}
 
 	inline function setDisplay(_type:Float) {
 		display.timeline.playAnimation("idle");
 		display.timeline.frameRate = 1 / 6;
 		display.scaleX = display.scaleY = 0.7;
-		display.offsetX = display.offsetY = -10;
+		display.offsetX = -55;
+		display.offsetY = -7;
 
 		if (type == 1) {} else {}
+	}
+
+	public function explode():Void {
+		collision.removeFromParent();
+		collisionGroup.remove(collision);
+		display.removeFromParent();
 	}
 
 	override function update(dt:Float):Void {
 		super.update(dt);
 		collision.update(dt);
+		if (type == 2) {
+			shootCounter += dt;
+			if (shootCounter > 4) {
+				gun.shoot(collision.x, collision.y, 1, 0);
+				gun.shoot(collision.x, collision.y, -1, 0);
+				shootCounter = 0;
+			}
+		}
 	}
 
 	override function render() {

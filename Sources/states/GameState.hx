@@ -50,6 +50,9 @@ class GameState extends State {
 	var manaCollision:CollisionGroup;
 	var manaPotion:Sprite;
 	var enemyCollision:CollisionGroup;
+	var enemies:Array<Enemy>;
+	var score:Float;
+	var scoreText:Text;
 
 	override function load(resources:Resources) {
 		resources.add(new DataLoader(Assets.blobs.lvl1_tmxName));
@@ -88,6 +91,8 @@ class GameState extends State {
 		audio = kha.audio1.Audio.play(Assets.sounds.FOREST, true); // meter en background con lvl 1
 		simulationLayer = new Layer();
 		enemyCollision = new CollisionGroup();
+		enemies = new Array<Enemy>();
+		score = 0;
 		GGD.simulationLayer = simulationLayer;
 		stage.addChild(simulationLayer);
 		worldMap = new Tilemap("lvl1_tmx", 1);
@@ -163,18 +168,31 @@ class GameState extends State {
 		manaCounter.y = GEngine.virtualHeight * 0.123;
 		manaCounter.text = "100";
 		hudLayer.addChild(manaCounter);
+
+		scoreText = new Text(Assets.fonts.ArialName);
+		scoreText.x = GEngine.virtualWidth * 0.42;
+		scoreText.y = GEngine.virtualHeight * 0.02;
+		scoreText.text = "Time: ";
+		hudLayer.addChild(scoreText);
 	}
 
 	override function update(dt:Float) {
 		super.update(dt);
+		score+=dt;
 		updateHUD();
 		stage.defaultCamera().setTarget(player.collision.x, player.collision.y - 133);
 		CollisionEngine.collide(player.collision, worldMap.collision);
+		CollisionEngine.collide(enemyCollision, worldMap.collision);
+		CollisionEngine.collide(enemyCollision, player.collision,nextLvl);
+		for (i in 0...enemies.length){
+			CollisionEngine.collide(enemies[i].gun.bulletsCollisions, worldMap.collision);
+			CollisionEngine.collide(enemies[i].gun.bulletsCollisions, player.collision,nextLvl);
+		}
 		CollisionEngine.collide(player.gun.bulletsCollisions, worldMap.collision, destroyBullet);
-		CollisionEngine.overlap(player.sword.collision, worldMap.collision);
+		CollisionEngine.collide(enemyCollision,player.sword.collision ,killEnemy);
+		CollisionEngine.collide(enemyCollision,player.gun.bulletsCollisions,killEnemy);
 		CollisionEngine.collide(player.collision, nextLvlCollision, nextLvl);
 		CollisionEngine.collide(player.collision, manaCollision, manaPotionCollision);
-		CollisionEngine.collide(player.collision, enemyCollision);
 		reset();
 	}
 
@@ -188,6 +206,10 @@ class GameState extends State {
 		audio.stop();
 		changeState(new StartingMenu());
 	}
+	public function killEnemy(a:ICollider, b:ICollider) {
+		var enemy:Enemy = cast a.userData;
+		enemy.explode();
+	}
 
 	public function manaPotionCollision(a:ICollider, b:ICollider) {
 		player.drinkPotion();
@@ -199,6 +221,10 @@ class GameState extends State {
 		fireBallLevitation();
 		arrowUpdate();
 		manaAndHeartsUpdate();
+		updateScore();
+	}
+	inline function updateScore() {
+		scoreText.text = "Time: "+Std.int(score);
 	}
 
 	inline function manaAndHeartsUpdate() {
@@ -274,6 +300,7 @@ class GameState extends State {
 					var eY = Std.parseFloat(y);
 					var enemyType = Std.parseFloat(enemyTypeString);
 					var enemy = new Enemy(eX, eY, enemyType, enemyCollision, simulationLayer);
+					enemies.push(enemy);
 					addChild(enemy);
 				}
 				if (object.type == "mana") {
