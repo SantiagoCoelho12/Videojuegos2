@@ -24,9 +24,12 @@ class Player extends Entity {
 
 	public var mana:Int = 100;
 	public var sword:Sword;
+	public var shield:Shield;
 	public var gun:Gun;
 	public var hearts:Int = 5;
 	public var collision:CollisionBox;
+	public var x(get, null):Float;
+	public var y(get, null):Float;
 
 	public function new(X:Float = 0, Y:Float = 0, layer:Layer) {
 		super();
@@ -37,6 +40,8 @@ class Player extends Entity {
 		addChild(gun);
 		sword = new Sword();
 		addChild(sword);
+		shield = new Shield();
+		addChild(shield);
 		display.pivotX = display.width() * 0.5;
 		display.pivotY = display.height();
 		display.offsetX = -25;
@@ -50,9 +55,26 @@ class Player extends Entity {
 		layer.addChild(display);
 	}
 
+	public function get_x():Float {
+		return collision.x + collision.width * 0.5;
+	}
+
+	public function get_y():Float {
+		return collision.y + collision.height;
+	}
+
+	public function get_width():Float {
+		return collision.width;
+	}
+
+	public function get_height():Float {
+		return collision.height;
+	}
+
 	public function drinkPotion() {
 		mana += 50;
-		if (mana > 100) mana =100;
+		if (mana > 100)
+			mana = 100;
 	}
 
 	override function update(dt:Float):Void {
@@ -63,25 +85,33 @@ class Player extends Entity {
 
 	private inline function movement() {
 		collision.velocityX = 0;
-		if (Input.i.isKeyCodeDown(KeyCode.A)) {
+		if (Input.i.isKeyCodeDown(KeyCode.A) && (!attacking || attacking && weaponSelection == 1)) {
 			collision.velocityX = -SPEED;
 			display.scaleX = -Math.abs(display.scaleX);
-		} else if (Input.i.isKeyCodeDown(KeyCode.D)) {
+		} else if (Input.i.isKeyCodeDown(KeyCode.D) && (!attacking || attacking && weaponSelection == 1)) {
 			collision.velocityX = SPEED;
 			display.scaleX = Math.abs(display.scaleX);
 		}
-		if (Input.i.isKeyCodePressed(KeyCode.W) && collision.isTouching(Sides.BOTTOM)) {
-			collision.velocityY = JUMP;
-		}
-		if (Input.i.isKeyCodePressed(KeyCode.One)) {
-			weaponSelection = 1;
-		}
-		if (Input.i.isKeyCodePressed(KeyCode.Two)) {
-			weaponSelection = 2;
+		if (!attacking) {
+			if (Input.i.isKeyCodeDown(KeyCode.S) && !collision.isTouching(Sides.BOTTOM)) {
+				collision.velocityY = -JUMP;
+			}
+			if (Input.i.isKeyCodePressed(KeyCode.W) && collision.isTouching(Sides.BOTTOM)) {
+				collision.velocityY = JUMP;
+			}
+			if (Input.i.isKeyCodePressed(KeyCode.One)) {
+				weaponSelection = 1;
+			}
+			if (Input.i.isKeyCodePressed(KeyCode.Two)) {
+				weaponSelection = 2;
+			}
+			if (Input.i.isKeyCodePressed(KeyCode.Three)) {
+				weaponSelection = 3;
+			}
 		}
 		if (Input.i.isMousePressed()) {
 			if (weaponSelection == 2 && mana >= 20) {
-				gun.shoot(collision.x, collision.y, display.scaleX, 0);
+				gun.shoot(collision.x, collision.y + collision.height * 0.5, display.scaleX, 0);
 				attacking = true;
 				mana -= 20;
 			}
@@ -90,15 +120,24 @@ class Player extends Entity {
 				sword.attack(collision.x + collision.width, collision.y, display.scaleX);
 				attacking = true;
 			}
+			if (weaponSelection == 3) {
+				shield.getCover();
+				attacking = true;
+			}
 		} else {
 			attacking = false;
 			sword.endAttack();
+			shield.stopShield();
 		}
-		if (Input.i.isKeyCodeDown(KeyCode.Shift)) {
-			if (collision.isTouching(Sides.BOTTOM))
-				SPEED = 150;
+		if (attacking) {
+			SPEED = 10;
 		} else {
 			SPEED = 100;
+			JUMP = -350;
+			if (Input.i.isKeyCodeDown(KeyCode.Shift) && collision.isTouching(Sides.BOTTOM)) {
+				SPEED = 170;
+				JUMP = -360;
+			}
 		}
 	}
 
@@ -112,6 +151,8 @@ class Player extends Entity {
 				display.timeline.playAnimation("sword");
 			if (weaponSelection == 2)
 				display.timeline.playAnimation("power");
+			if (weaponSelection == 3)
+				display.timeline.playAnimation("power2");
 			display.timeline.frameRate = 1 / 15;
 		} else if (collision.isTouching(Sides.BOTTOM) && collision.velocityX == 0) {
 			display.timeline.playAnimation("idle");

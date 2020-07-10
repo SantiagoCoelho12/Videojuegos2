@@ -1,5 +1,6 @@
 package states;
 
+import kha.math.Random;
 import com.collision.platformer.CollisionGroup;
 import com.collision.platformer.CollisionBox;
 import com.loading.basicResources.FontLoader;
@@ -64,6 +65,7 @@ class GameState extends State {
 		atlas.add(new ImageLoader("heart"));
 		atlas.add(new ImageLoader("mana"));
 		atlas.add(new ImageLoader("sword"));
+		atlas.add(new ImageLoader("shield"));
 		atlas.add(new ImageLoader("nextlvl"));
 		atlas.add(new ImageLoader("fireballHUD"));
 		atlas.add(new ImageLoader("hand"));
@@ -93,7 +95,6 @@ class GameState extends State {
 		enemyCollision = new CollisionGroup();
 		enemies = new Array<Enemy>();
 		score = 0;
-		GGD.simulationLayer = simulationLayer;
 		stage.addChild(simulationLayer);
 		worldMap = new Tilemap("lvl1_tmx", 1);
 		worldMap.init(function(layerTilemap, tileLayer) {
@@ -102,12 +103,14 @@ class GameState extends State {
 			}
 			simulationLayer.addChild(layerTilemap.createDisplay(tileLayer, new Sprite("lvl1ground")));
 		}, parseMapObjects);
-
+		
 		stage.defaultCamera().limits(0, 0, worldMap.widthIntTiles * 32, (worldMap.heightInTiles * 32));
 		player = new Player(spawnX, spawnY, simulationLayer);
 		addChild(player);
 		setHUD();
-		stage.defaultCamera().scale = 2;
+		GGD.simulationLayer = simulationLayer;
+		GGD.player = player;
+		stage.defaultCamera().scale = 1.9;
 	}
 
 	inline function loadBackground() {
@@ -151,6 +154,12 @@ class GameState extends State {
 		fireBall.y = GEngine.virtualHeight * 0.145;
 		hudLayer.addChild(fireBall);
 
+		var shield = new Sprite("shield");
+		shield.scaleX = shield.scaleY = 0.06;
+		shield.x = GEngine.virtualWidth * 0.956;
+		shield.y = GEngine.virtualHeight * 0.215;
+		hudLayer.addChild(shield);
+
 		arrow = new Text(Assets.fonts.ArialName);
 		arrow.x = GEngine.virtualWidth * 0.935;
 		arrow.y = GEngine.virtualHeight * 0.067;
@@ -185,11 +194,13 @@ class GameState extends State {
 		CollisionEngine.collide(enemyCollision, worldMap.collision);
 		CollisionEngine.collide(enemyCollision, player.collision,nextLvl);
 		for (i in 0...enemies.length){
-			CollisionEngine.collide(enemies[i].gun.bulletsCollisions, worldMap.collision);
+			CollisionEngine.collide(enemies[i].gun.bulletsCollisions, worldMap.collision,destroyBullet);
 			CollisionEngine.collide(enemies[i].gun.bulletsCollisions, player.collision,nextLvl);
+			CollisionEngine.collide(enemies[i].gun.bulletsCollisions, player.shield.collision,destroyBullet);
 		}
 		CollisionEngine.collide(player.gun.bulletsCollisions, worldMap.collision, destroyBullet);
 		CollisionEngine.collide(enemyCollision,player.sword.collision ,killEnemy);
+		CollisionEngine.collide(enemyCollision,player.shield.collision );
 		CollisionEngine.collide(enemyCollision,player.gun.bulletsCollisions,killEnemy);
 		CollisionEngine.collide(player.collision, nextLvlCollision, nextLvl);
 		CollisionEngine.collide(player.collision, manaCollision, manaPotionCollision);
@@ -197,9 +208,7 @@ class GameState extends State {
 	}
 
 	public function destroyBullet(a:ICollider, b:ICollider) {
-		/*var bullet:Bullet=cast a.userData;
-			bullet.collision.x=-5000;
-			bullet.collision.y=-5000; */
+		var bullet:Bullet=cast a.userData;
 	}
 
 	public function nextLvl(a:ICollider, b:ICollider) {
@@ -238,6 +247,9 @@ class GameState extends State {
 		}
 		if (Input.i.isKeyCodePressed(KeyCode.Two)) {
 			arrow.y = GEngine.virtualHeight * 0.16;
+		}
+		if (Input.i.isKeyCodePressed(KeyCode.Three)) {
+			arrow.y = GEngine.virtualHeight * 0.22;
 		}
 	}
 
@@ -299,7 +311,8 @@ class GameState extends State {
 					var eX = Std.parseFloat(x);
 					var eY = Std.parseFloat(y);
 					var enemyType = Std.parseFloat(enemyTypeString);
-					var enemy = new Enemy(eX, eY, enemyType, enemyCollision, simulationLayer);
+					var timer = Std.int(5*Math.random());
+					var enemy = new Enemy(eX, eY, enemyType, enemyCollision, simulationLayer,timer+1);
 					enemies.push(enemy);
 					addChild(enemy);
 				}
