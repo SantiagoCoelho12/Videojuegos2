@@ -1,5 +1,6 @@
 package gameObjects;
 
+import com.collision.platformer.Sides;
 import kha.math.FastVector2;
 import GlobalGameData.GGD;
 import com.collision.platformer.CollisionGroup;
@@ -111,5 +112,10 @@ class Enemy extends Entity {
 	override function render() {
 		display.x = collision.x + collision.width * 0.5;
 		display.y = collision.y;
+		if (collision.isTouching(Sides.BOTTOM) && collision.velocityX == 0) {
+			display.timeline.playAnimation("idle");
+		} else if (collision.isTouching(Sides.BOTTOM) && collision.velocityX != 0) {
+			display.timeline.playAnimation("run");
+		} 
 	}
 }

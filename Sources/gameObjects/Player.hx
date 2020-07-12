@@ -133,10 +133,10 @@ class Player extends Entity {
 			SPEED = 10;
 		} else {
 			SPEED = 100;
-			JUMP = -350;
+			JUMP = -360;
 			if (Input.i.isKeyCodeDown(KeyCode.Shift) && collision.isTouching(Sides.BOTTOM)) {
 				SPEED = 170;
-				JUMP = -360;
+				JUMP = -375;
 			}
 		}
 	}

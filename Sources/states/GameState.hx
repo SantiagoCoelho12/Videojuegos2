@@ -54,13 +54,22 @@ class GameState extends State {
 	var enemies:Array<Enemy>;
 	var score:Float;
 	var scoreText:Text;
+	var lvl:Int;
+
+	public function new(lvl:Int, score:Float) {
+		super();
+		this.lvl = lvl;
+		this.score = score;
+	}
 
 	override function load(resources:Resources) {
 		resources.add(new DataLoader(Assets.blobs.lvl1_tmxName));
+		resources.add(new DataLoader(Assets.blobs.lvl2_tmxName));
 		var atlas:JoinAtlas = new JoinAtlas(4000, 4000);
 		atlas.add(new FontLoader(Assets.fonts.ArialName, 27));
-		atlas.add(new TilesheetLoader("lvl1ground", 16, 16, 0));
-		atlas.add(new ImageLoader("lvl1Background"));
+		atlas.add(new TilesheetLoader("lvl2ground", 16, 16, 0));
+		atlas.add(new TilesheetLoader("lvl1TileSet", 16, 16, 0));
+		atlas.add(new ImageLoader("lvl2Background"));
 		atlas.add(new ImageLoader("bullet"));
 		atlas.add(new ImageLoader("heart"));
 		atlas.add(new ImageLoader("mana"));
@@ -96,14 +105,8 @@ class GameState extends State {
 		enemies = new Array<Enemy>();
 		score = 0;
 		stage.addChild(simulationLayer);
-		worldMap = new Tilemap("lvl1_tmx", 1);
-		worldMap.init(function(layerTilemap, tileLayer) {
-			if (!tileLayer.properties.exists("noCollision")) {
-				layerTilemap.createCollisions(tileLayer);
-			}
-			simulationLayer.addChild(layerTilemap.createDisplay(tileLayer, new Sprite("lvl1ground")));
-		}, parseMapObjects);
-		
+		lvlControl();
+
 		stage.defaultCamera().limits(0, 0, worldMap.widthIntTiles * 32, (worldMap.heightInTiles * 32));
 		player = new Player(spawnX, spawnY, simulationLayer);
 		addChild(player);
@@ -113,9 +116,29 @@ class GameState extends State {
 		stage.defaultCamera().scale = 1.9;
 	}
 
+	inline function lvlControl() {
+		if (lvl == 1) {
+			worldMap = new Tilemap("lvl1_tmx", 1);
+			worldMap.init(function(layerTilemap, tileLayer) {
+				if (!tileLayer.properties.exists("noCollision")) {
+					layerTilemap.createCollisions(tileLayer);
+				}
+				simulationLayer.addChild(layerTilemap.createDisplay(tileLayer, new Sprite("lvl1TileSet")));
+			}, parseMapObjects);
+		} else if (lvl == 2) {
+			worldMap = new Tilemap("lvl2_tmx", 1);
+			worldMap.init(function(layerTilemap, tileLayer) {
+				if (!tileLayer.properties.exists("noCollision")) {
+					layerTilemap.createCollisions(tileLayer);
+				}
+				simulationLayer.addChild(layerTilemap.createDisplay(tileLayer, new Sprite("lvl2ground")));
+			}, parseMapObjects);
+		}
+	}
+
 	inline function loadBackground() {
 		var backgraundLayer = new Layer();
-		var background = new Sprite("lvl1Background");
+		var background = new Sprite("lvl2Background");
 		background.smooth = true;
 		backgraundLayer.addChild(background);
 		stage.addChild(backgraundLayer);
@@ -187,34 +210,45 @@ class GameState extends State {
 
 	override function update(dt:Float) {
 		super.update(dt);
-		score+=dt;
+		score += dt;
 		updateHUD();
+		fallControl();
 		stage.defaultCamera().setTarget(player.collision.x, player.collision.y - 133);
 		CollisionEngine.collide(player.collision, worldMap.collision);
 		CollisionEngine.collide(enemyCollision, worldMap.collision);
-		CollisionEngine.collide(enemyCollision, player.collision,nextLvl);
-		for (i in 0...enemies.length){
-			CollisionEngine.collide(enemies[i].gun.bulletsCollisions, worldMap.collision,destroyBullet);
-			CollisionEngine.collide(enemies[i].gun.bulletsCollisions, player.collision,nextLvl);
-			CollisionEngine.collide(enemies[i].gun.bulletsCollisions, player.shield.collision,destroyBullet);
+		CollisionEngine.collide(enemyCollision, player.collision, characterDeath);
+		for (i in 0...enemies.length) {
+			CollisionEngine.collide(enemies[i].gun.bulletsCollisions, worldMap.collision, destroyBullet);
+			CollisionEngine.collide(enemies[i].gun.bulletsCollisions, player.collision, characterDeath);
+			CollisionEngine.collide(enemies[i].gun.bulletsCollisions, player.shield.collision, destroyBullet);
 		}
 		CollisionEngine.collide(player.gun.bulletsCollisions, worldMap.collision, destroyBullet);
-		CollisionEngine.collide(enemyCollision,player.sword.collision ,killEnemy);
-		CollisionEngine.collide(enemyCollision,player.shield.collision );
-		CollisionEngine.collide(enemyCollision,player.gun.bulletsCollisions,killEnemy);
+		CollisionEngine.collide(enemyCollision, player.sword.collision, killEnemy);
+		CollisionEngine.collide(enemyCollision, player.shield.collision);
+		CollisionEngine.collide(enemyCollision, player.gun.bulletsCollisions, killEnemy);
 		CollisionEngine.collide(player.collision, nextLvlCollision, nextLvl);
 		CollisionEngine.collide(player.collision, manaCollision, manaPotionCollision);
 		reset();
 	}
 
 	public function destroyBullet(a:ICollider, b:ICollider) {
-		var bullet:Bullet=cast a.userData;
+		var bullet:Bullet = cast a.userData;
 	}
 
 	public function nextLvl(a:ICollider, b:ICollider) {
 		audio.stop();
-		changeState(new StartingMenu());
+		changeState(new GameState(lvl + 1, score));
 	}
+
+	public function characterDeath(a:ICollider, b:ICollider) {
+		if(player.hearts == 0){
+			//gameover
+		}else{
+			audio.stop();
+			changeState(new GameState(lvl,score));
+		}
+	}
+
 	public function killEnemy(a:ICollider, b:ICollider) {
 		var enemy:Enemy = cast a.userData;
 		enemy.explode();
@@ -232,8 +266,9 @@ class GameState extends State {
 		manaAndHeartsUpdate();
 		updateScore();
 	}
+
 	inline function updateScore() {
-		scoreText.text = "Time: "+Std.int(score);
+		scoreText.text = "Time: " + Std.int(score);
 	}
 
 	inline function manaAndHeartsUpdate() {
@@ -259,6 +294,14 @@ class GameState extends State {
 			fireBallYLevitation *= -1;
 		}
 	}
+
+	private inline function fallControl() {
+		if(player.y > 1250){
+			audio.stop();
+			changeState(new StartingMenu());
+		}
+	}
+
 
 	override function render() {
 		super.render();
@@ -311,8 +354,8 @@ class GameState extends State {
 					var eX = Std.parseFloat(x);
 					var eY = Std.parseFloat(y);
 					var enemyType = Std.parseFloat(enemyTypeString);
-					var timer = Std.int(5*Math.random());
-					var enemy = new Enemy(eX, eY, enemyType, enemyCollision, simulationLayer,timer+1);
+					var timer = Std.int(5 * Math.random());
+					var enemy = new Enemy(eX, eY, enemyType, enemyCollision, simulationLayer, timer + 1);
 					enemies.push(enemy);
 					addChild(enemy);
 				}

@@ -75,7 +75,7 @@ class StartingMenu extends State {
 			start.offsetY = -0.5;
 			if (Input.i.isMouseReleased()) {
 				var beep:AudioChannel = kha.audio1.Audio.play(Assets.sounds.START);
-				changeState(new GameState());
+				changeState(new GameState(1,0));
 			}
 		} else {
 			start.color = Color.fromBytes(116, 132, 65);
