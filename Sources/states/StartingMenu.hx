@@ -44,7 +44,7 @@ class StartingMenu extends State {
 		instructions.x = GEngine.virtualWidth * 0.4;
 		instructions.y = GEngine.virtualHeight * 0.75;
 
-		instructions.text = "HOW TO PLAY:\n\n-Move: W A S D \n-Run:  Shift \n-Hit:  Right click (Keep pressed)\n-Change Weapon:  1 2 3";
+		instructions.text = "HOW TO PLAY:\n\n-Move: W A S D \n-Hit:  Right click (Keep pressed)\n-Change Weapon:  1 2 3";
 
 		layer.addChild(instructions);
 		stage.addChild(layer);

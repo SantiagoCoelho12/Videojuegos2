@@ -14,24 +14,24 @@ import kha.input.KeyCode;
 import com.framework.utils.Input;
 
 class Player extends Entity {
-	var SPEED:Float = 100;
-	var JUMP:Float = -350;
+	var SPEED:Float = 160;
+	var JUMP:Float = -360;
 	var currentLayer:Layer;
 	var display:Sprite;
 	var velocity:FastVector2;
 	var attacking:Bool = false;
 	var weaponSelection:Float = 1;
 
-	public var mana:Int = 100;
+	public var mana:Int;
 	public var sword:Sword;
 	public var shield:Shield;
 	public var gun:Gun;
-	public var hearts:Int = 5;
+	public var hearts:Int;
 	public var collision:CollisionBox;
 	public var x(get, null):Float;
 	public var y(get, null):Float;
 
-	public function new(X:Float = 0, Y:Float = 0, layer:Layer) {
+	public function new(X:Float = 0, Y:Float = 0, layer:Layer, _hearts:Int, _mana:Int) {
 		super();
 		display = new Sprite("player");
 		collision = new CollisionBox();
@@ -42,6 +42,8 @@ class Player extends Entity {
 		addChild(sword);
 		shield = new Shield();
 		addChild(shield);
+		hearts = _hearts;
+		mana = _mana;
 		display.pivotX = display.width() * 0.5;
 		display.pivotY = display.height();
 		display.offsetX = -25;
@@ -94,7 +96,7 @@ class Player extends Entity {
 		}
 		if (!attacking) {
 			if (Input.i.isKeyCodeDown(KeyCode.S) && !collision.isTouching(Sides.BOTTOM)) {
-				collision.velocityY = -JUMP;
+				collision.velocityY = -JUMP * 0.8;
 			}
 			if (Input.i.isKeyCodePressed(KeyCode.W) && collision.isTouching(Sides.BOTTOM)) {
 				collision.velocityY = JUMP;
@@ -132,12 +134,7 @@ class Player extends Entity {
 		if (attacking) {
 			SPEED = 10;
 		} else {
-			SPEED = 100;
-			JUMP = -360;
-			if (Input.i.isKeyCodeDown(KeyCode.Shift) && collision.isTouching(Sides.BOTTOM)) {
-				SPEED = 170;
-				JUMP = -375;
-			}
+			SPEED = 160;
 		}
 	}
 

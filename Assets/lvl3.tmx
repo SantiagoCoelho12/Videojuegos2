@@ -180,7 +180,7 @@
   <object id="25" type="mana" x="771" y="509"/>
   <object id="27" x="1327" y="493" width="36" height="30">
    <properties>
-    <property name="type" value="boss"/>
+    <property name="type" value="3"/>
    </properties>
   </object>
  </objectgroup>

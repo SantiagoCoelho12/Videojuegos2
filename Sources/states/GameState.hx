@@ -55,16 +55,21 @@ class GameState extends State {
 	var score:Float;
 	var scoreText:Text;
 	var lvl:Int;
+	var playerHeart:Int;
+	var playerMana:Int;
 
-	public function new(lvl:Int, score:Float) {
+	public function new(lvl:Int, score:Float, _playerHeart:Int = 5, _playerMana:Int = 100) {
 		super();
 		this.lvl = lvl;
 		this.score = score;
+		playerHeart = _playerHeart;
+		playerMana = _playerMana;
 	}
 
 	override function load(resources:Resources) {
 		resources.add(new DataLoader(Assets.blobs.lvl1_tmxName));
 		resources.add(new DataLoader(Assets.blobs.lvl2_tmxName));
+		resources.add(new DataLoader(Assets.blobs.lvl3_tmxName));
 		var atlas:JoinAtlas = new JoinAtlas(4000, 4000);
 		atlas.add(new FontLoader(Assets.fonts.ArialName, 27));
 		atlas.add(new TilesheetLoader("lvl2ground", 16, 16, 0));
@@ -107,16 +112,17 @@ class GameState extends State {
 		stage.addChild(simulationLayer);
 		lvlControl();
 
-		stage.defaultCamera().limits(0, 0, worldMap.widthIntTiles * 32, (worldMap.heightInTiles * 32));
-		player = new Player(spawnX, spawnY, simulationLayer);
+		stage.defaultCamera().limits(0, 0, worldMap.widthIntTiles * 16, (worldMap.heightInTiles * 16));
+		player = new Player(spawnX, spawnY, simulationLayer,playerHeart,playerMana);
 		addChild(player);
 		setHUD();
 		GGD.simulationLayer = simulationLayer;
 		GGD.player = player;
-		stage.defaultCamera().scale = 1.9;
+		stage.defaultCamera().scale = 1.7;
 	}
 
 	inline function lvlControl() {
+		//lvl = 1;
 		if (lvl == 1) {
 			worldMap = new Tilemap("lvl1_tmx", 1);
 			worldMap.init(function(layerTilemap, tileLayer) {
@@ -127,6 +133,14 @@ class GameState extends State {
 			}, parseMapObjects);
 		} else if (lvl == 2) {
 			worldMap = new Tilemap("lvl2_tmx", 1);
+			worldMap.init(function(layerTilemap, tileLayer) {
+				if (!tileLayer.properties.exists("noCollision")) {
+					layerTilemap.createCollisions(tileLayer);
+				}
+				simulationLayer.addChild(layerTilemap.createDisplay(tileLayer, new Sprite("lvl2ground")));
+			}, parseMapObjects);
+		} else if (lvl == 3) {
+			worldMap = new Tilemap("lvl3_tmx", 1);
 			worldMap.init(function(layerTilemap, tileLayer) {
 				if (!tileLayer.properties.exists("noCollision")) {
 					layerTilemap.createCollisions(tileLayer);
@@ -216,36 +230,43 @@ class GameState extends State {
 		stage.defaultCamera().setTarget(player.collision.x, player.collision.y - 133);
 		CollisionEngine.collide(player.collision, worldMap.collision);
 		CollisionEngine.collide(enemyCollision, worldMap.collision);
-		CollisionEngine.collide(enemyCollision, player.collision, characterDeath);
+		CollisionEngine.collide(player.gun.bulletsCollisions, worldMap.collision, destroyBullet);
 		for (i in 0...enemies.length) {
 			CollisionEngine.collide(enemies[i].gun.bulletsCollisions, worldMap.collision, destroyBullet);
 			CollisionEngine.collide(enemies[i].gun.bulletsCollisions, player.collision, characterDeath);
 			CollisionEngine.collide(enemies[i].gun.bulletsCollisions, player.shield.collision, destroyBullet);
 		}
-		CollisionEngine.collide(player.gun.bulletsCollisions, worldMap.collision, destroyBullet);
-		CollisionEngine.collide(enemyCollision, player.sword.collision, killEnemy);
-		CollisionEngine.collide(enemyCollision, player.shield.collision);
+		CollisionEngine.collide(enemyCollision, player.collision, characterDeath);
 		CollisionEngine.collide(enemyCollision, player.gun.bulletsCollisions, killEnemy);
-		CollisionEngine.collide(player.collision, nextLvlCollision, nextLvl);
-		CollisionEngine.collide(player.collision, manaCollision, manaPotionCollision);
+		CollisionEngine.collide(enemyCollision, player.shield.collision);
+		CollisionEngine.overlap(enemyCollision, player.sword.collision, killEnemy);
+		CollisionEngine.overlap(manaCollision, player.collision, manaPotionCollision);
+		CollisionEngine.overlap(nextLvlCollision, player.collision, nextLvl);
 		reset();
 	}
 
 	public function destroyBullet(a:ICollider, b:ICollider) {
 		var bullet:Bullet = cast a.userData;
+		// bullet.die();
 	}
 
 	public function nextLvl(a:ICollider, b:ICollider) {
 		audio.stop();
-		changeState(new GameState(lvl + 1, score));
+		changeState(new GameState(lvl + 1, score, player.hearts, player.mana));
 	}
 
 	public function characterDeath(a:ICollider, b:ICollider) {
-		if(player.hearts == 0){
-			//gameover
-		}else{
+		death();
+	}
+
+	private inline function death() {
+		player.hearts--;
+		if (player.hearts == 0) {
 			audio.stop();
-			changeState(new GameState(lvl,score));
+			changeState(new GameOver(lvl, score));
+		} else {
+			audio.stop();
+			changeState(new GameState(lvl, score, player.hearts, player.mana));
 		}
 	}
 
@@ -296,12 +317,10 @@ class GameState extends State {
 	}
 
 	private inline function fallControl() {
-		if(player.y > 1250){
-			audio.stop();
-			changeState(new StartingMenu());
+		if (player.y > 1000) {
+			death();
 		}
 	}
-
 
 	override function render() {
 		super.render();
