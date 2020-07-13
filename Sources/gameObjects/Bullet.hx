@@ -22,10 +22,7 @@ class Bullet extends Entity {
 		collision = new CollisionBox();
 		collision.width =15;
 		collision.height = 4;
-
 		collision.userData = this;
-		
-
 		display.scaleX = display.scaleY = 0.08;
 		//display.offsetY= -5;
 		display.offsetY= -1.5;
@@ -35,6 +32,7 @@ class Bullet extends Entity {
 		display.removeFromParent();
 		collision.removeFromParent();
 	}
+
 
 	override function update(dt:Float) {
 		super.update(dt);

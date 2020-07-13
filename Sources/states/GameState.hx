@@ -61,6 +61,7 @@ class GameState extends State {
 	}
 
 	override function load(resources:Resources) {
+		lvl = 2;
 		resources.add(new DataLoader(Assets.blobs.lvl1_tmxName));
 		resources.add(new DataLoader(Assets.blobs.lvl2_tmxName));
 		resources.add(new DataLoader(Assets.blobs.finalLvl_tmxName));
@@ -68,7 +69,10 @@ class GameState extends State {
 		atlas.add(new FontLoader(Assets.fonts.ArialName, 27));
 		atlas.add(new TilesheetLoader("lvl2ground", 16, 16, 0));
 		atlas.add(new TilesheetLoader("lvl1TileSet", 16, 16, 0));
-		atlas.add(new ImageLoader("lvl2Background"));
+		if (lvl == 1)
+			atlas.add(new ImageLoader("lvl1Background"));
+		if (lvl == 2)
+			atlas.add(new ImageLoader("lvl2Background"));
 		atlas.add(new ImageLoader("bullet"));
 		atlas.add(new ImageLoader("heart"));
 		atlas.add(new ImageLoader("mana"));
@@ -99,25 +103,34 @@ class GameState extends State {
 
 	override function init() {
 		loadBackground();
-		audio = kha.audio1.Audio.play(Assets.sounds.FOREST, true); // meter en background con lvl 1
 		simulationLayer = new Layer();
 		enemyCollision = new CollisionGroup();
 		enemies = new Array<Enemy>();
 		score = 0;
-		stage.addChild(simulationLayer);
 		lvlControl();
-
-		stage.defaultCamera().limits(0, 0, worldMap.widthIntTiles * 16, (worldMap.heightInTiles * 16));
-		player = new Player(spawnX, spawnY, simulationLayer, playerHeart, playerMana);
-		addChild(player);
+		cameraSettings();
+		createPlayer();
 		setHUD();
+		setGGD();
+		stage.addChild(simulationLayer);
+	}
+
+	inline function setGGD() {
 		GGD.simulationLayer = simulationLayer;
 		GGD.player = player;
+	}
+
+	inline function createPlayer() {
+		player = new Player(spawnX, spawnY, simulationLayer, playerHeart, playerMana);
+		addChild(player);
+	}
+
+	inline function cameraSettings() {
+		stage.defaultCamera().limits(0, 0, worldMap.widthIntTiles * 16, (worldMap.heightInTiles * 16));
 		stage.defaultCamera().scale = 1.7;
 	}
 
 	inline function lvlControl() {
-		// lvl = 3;
 		if (lvl == 1) {
 			worldMap = new Tilemap("lvl1_tmx", 1);
 			worldMap.init(function(layerTilemap, tileLayer) {
@@ -147,9 +160,22 @@ class GameState extends State {
 
 	inline function loadBackground() {
 		var backgraundLayer = new Layer();
-		var background = new Sprite("lvl2Background");
-		background.smooth = true;
-		backgraundLayer.addChild(background);
+		if (lvl == 1) {
+			var background = new Sprite("lvl1Background");
+			background.smooth = true;
+			backgraundLayer.addChild(background);
+			audio = kha.audio1.Audio.play(Assets.sounds.FOREST, true);
+		} else if (lvl == 2) {
+			var background = new Sprite("lvl2Background");
+			background.smooth = true;
+			backgraundLayer.addChild(background);
+			audio = kha.audio1.Audio.play(Assets.sounds.FOREST, true);
+		} else if (lvl == 3) {
+			var background = new Sprite("lvl2Background");
+			background.smooth = true;
+			backgraundLayer.addChild(background);
+			audio = kha.audio1.Audio.play(Assets.sounds.FOREST, true);
+		}
 		stage.addChild(backgraundLayer);
 	}
 
@@ -219,10 +245,16 @@ class GameState extends State {
 
 	override function update(dt:Float) {
 		super.update(dt);
+		stage.defaultCamera().setTarget(player.collision.x, player.collision.y - 133);
 		score += dt;
 		updateHUD();
 		fallControl();
-		stage.defaultCamera().setTarget(player.collision.x, player.collision.y - 133);
+		coliisionsControl();
+		playerDeathControl();
+		reset();
+	}
+
+	inline function coliisionsControl() {
 		CollisionEngine.collide(player.collision, worldMap.collision);
 		CollisionEngine.collide(enemyCollision, worldMap.collision);
 		CollisionEngine.collide(player.gun.bulletsCollisions, worldMap.collision, destroyBullet);
@@ -233,13 +265,11 @@ class GameState extends State {
 			enemyDeathControl(enemies[i]);
 		}
 		CollisionEngine.collide(enemyCollision, player.collision, characterDeath);
-		CollisionEngine.collide(enemyCollision, player.gun.bulletsCollisions, killEnemy);
+		CollisionEngine.collide(enemyCollision, player.gun.bulletsCollisions, killEnemyAndDestroyBullet);
 		CollisionEngine.collide(enemyCollision, player.shield.collision);
 		CollisionEngine.overlap(enemyCollision, player.sword.collision, killEnemy);
 		CollisionEngine.overlap(manaCollision, player.collision, manaPotionCollision);
 		CollisionEngine.overlap(nextLvlCollision, player.collision, nextLvl);
-		playerDeathControl();
-		reset();
 	}
 
 	public inline function playerDeathControl() {
@@ -266,8 +296,17 @@ class GameState extends State {
 	}
 
 	public function destroyBullet(a:ICollider, b:ICollider) {
-		var bullet:Bullet = cast a.userData;
-		// bullet.die();
+		var bullet:Bullet = cast b.userData;
+		if (bullet != null)
+			bullet.die();
+		var bullet2:Bullet = cast a.userData;
+		if (bullet2 != null)
+			bullet2.die();
+	}
+
+	public function killEnemyAndDestroyBullet(a:ICollider, b:ICollider) {
+		killEnemy(a, b);
+		destroyBullet(a, b);
 	}
 
 	public function nextLvl(a:ICollider, b:ICollider) {
@@ -308,13 +347,13 @@ class GameState extends State {
 	}
 
 	inline function arrowUpdate() {
-		if (Input.i.isKeyCodePressed(KeyCode.One)) {
+		if (player.getWeaponNumber() == 1) {
 			arrow.y = GEngine.virtualHeight * 0.067;
 		}
-		if (Input.i.isKeyCodePressed(KeyCode.Two)) {
+		if (player.getWeaponNumber() == 2) {
 			arrow.y = GEngine.virtualHeight * 0.16;
 		}
-		if (Input.i.isKeyCodePressed(KeyCode.Three)) {
+		if (player.getWeaponNumber() == 3) {
 			arrow.y = GEngine.virtualHeight * 0.22;
 		}
 	}
@@ -345,16 +384,6 @@ class GameState extends State {
 
 	function parseMapObjects(layerTilemap:Tilemap, object:TmxObject) {
 		switch (object.objectType) {
-			case OTTile(gid):
-			/*var sprite = new Sprite("salt");
-				sprite.smooth = false;
-				sprite.x = object.x;
-				sprite.y = object.y - sprite.height();
-				sprite.pivotY=sprite.height();
-				sprite.scaleX = object.width/sprite.width();
-				sprite.scaleY = object.height/sprite.height();
-				sprite.rotation = object.rotation*Math.PI/180;
-				simulationLayer.addChild(sprite); */
 			case OTRectangle:
 				if (object.type == "spawn") {
 					var x = object.properties.get("spawnX");
