@@ -1,5 +1,9 @@
 package gameObjects;
 
+import paths.PathWalker;
+import paths.PathWalker.PlayMode;
+import paths.LinearPath;
+import paths.Path;
 import com.collision.platformer.Sides;
 import kha.math.FastVector2;
 import GlobalGameData.GGD;
@@ -10,13 +14,13 @@ import com.gEngine.display.Sprite;
 import com.framework.utils.Entity;
 
 class Enemy extends Entity {
-	var SPEED:Float = 100;
 	var type:Float;
 	var display:Sprite;
 	var currentLayer:Layer;
 	var collisionGroup:CollisionGroup;
 	var shootCounter:Float = 0;
 	var gunTimer:Int;
+	var pathWalker:PathWalker;
 
 	public var collision:CollisionBox;
 	public var gun:Gun;
@@ -26,6 +30,8 @@ class Enemy extends Entity {
 		type = _type;
 		collision = new CollisionBox();
 		gun = new Gun();
+		var path = new LinearPath(new FastVector2(X - (40 * Math.random() + 5), 0), new FastVector2(X + (800 * Math.random() + 10), 0));
+		pathWalker = PathWalker.fromSpeed(path, 40, PlayMode.Pong);
 		currentLayer = layer;
 		gunTimer = timer;
 		collisionGroup = _collisions;
@@ -59,25 +65,49 @@ class Enemy extends Entity {
 		display.timeline.playAnimation("idle");
 		display.timeline.frameRate = 1 / 6;
 		display.scaleX = display.scaleY = 0.7;
-		display.offsetX = -55;
-		display.offsetY = -7;
 
-		if (type == 1) {} else {}
+		if (type == 1) {
+			display.offsetX = -60;
+			display.offsetY = -11;
+		} else {
+			display.offsetX = -55;
+			display.offsetY = -7;
+		}
 	}
 
 	public function explode():Void {
 		collision.removeFromParent();
 		collisionGroup.remove(collision);
+	}
+
+	public function endDeath() {
 		display.removeFromParent();
 	}
-	
+
+	override function die() {
+		super.die();
+		display.timeline.playAnimation("death", false);
+	}
+
+	public function deathComplete():Bool {
+		return display.timeline.isComplete();
+	}
 
 	override function update(dt:Float):Void {
 		super.update(dt);
 		collision.update(dt);
 		if (type == 1) {
-			if(calculateDistance(GGD.player.collision.x,collision.x,GGD.player.collision.y,collision.y) < 20000){
+			pathWalker.update(dt);
+			if (calculateDistance(GGD.player.collision.x, collision.x, GGD.player.collision.y, collision.y) < 20000) {
 				followPlayer();
+			} else {
+				collision.x = pathWalker.x - collision.width / 2;
+				var deltaX:Float = collision.x - collision.lastX;
+				if (deltaX > 0) {
+					display.scaleX = Math.abs(display.scaleX);
+				} else {
+					display.scaleX = -Math.abs(display.scaleX);
+				}
 			}
 		}
 		if (type == 2) {
@@ -89,33 +119,35 @@ class Enemy extends Entity {
 			}
 		}
 	}
-	inline function calculateDistance(x2:Float,x1:Float,y2:Float,y1:Float):Float {
-		return Math.pow(x2-x1,2)+Math.pow(y2-y1,2);
+
+	inline function calculateDistance(x2:Float, x1:Float, y2:Float, y1:Float):Float {
+		return Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
 	}
 
 	inline function followPlayer() {
 		var target:Player = GGD.player;
-		var dir:FastVector2 = new FastVector2(target.x-(collision.x+collision.width*0.5),0);
-		if(Math.abs(dir.x)>5&&Math.abs(dir.y)>5){
-			if(Math.abs(dir.x)>Math.abs(dir.y)){
-				dir.x=0;
-			}else{
-				dir.y=0;
+		var dir:FastVector2 = new FastVector2(target.x - (collision.x + collision.width * 0.5), 0);
+		if (Math.abs(dir.x) > 5 && Math.abs(dir.y) > 5) {
+			if (Math.abs(dir.x) > Math.abs(dir.y)) {
+				dir.x = 0;
+			} else {
+				dir.y = 0;
 			}
 		}
 		dir.setFrom(dir.normalized());
 		dir.setFrom(dir.mult(100));
-		collision.velocityX=dir.x;
-		//collision.velocityY=dir.y;
+		collision.velocityX = dir.x;
+		// collision.velocityY=dir.y;
 	}
 
 	override function render() {
 		display.x = collision.x + collision.width * 0.5;
 		display.y = collision.y;
-		if (collision.isTouching(Sides.BOTTOM) && collision.velocityX == 0) {
-			display.timeline.playAnimation("idle");
-		} else if (collision.isTouching(Sides.BOTTOM) && collision.velocityX != 0) {
-			display.timeline.playAnimation("run");
-		} 
+		if (!dead) {
+			if (type == 1) {
+				display.timeline.playAnimation("run");
+			} else
+				display.timeline.playAnimation("idle");
+		}
 	}
 }

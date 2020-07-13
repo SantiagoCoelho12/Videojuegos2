@@ -40,7 +40,7 @@ class Player extends Entity {
 		addChild(gun);
 		sword = new Sword();
 		addChild(sword);
-		shield = new Shield();
+		shield = new Shield(layer);
 		addChild(shield);
 		hearts = _hearts;
 		mana = _mana;
@@ -138,27 +138,40 @@ class Player extends Entity {
 		}
 	}
 
+	public override function die() {
+		super.die();
+		display.timeline.playAnimation("death", false);
+		display.timeline.frameRate = 1 / 30;
+
+	}
+
+	public function deathComplete():Bool {
+		return display.timeline.isComplete();
+	}
+
 	override function render() {
 		display.x = collision.x + collision.width * 0.5;
 		display.y = collision.y;
 
 		display.timeline.frameRate = 1 / 7;
-		if (attacking) {
-			if (weaponSelection == 1)
-				display.timeline.playAnimation("sword");
-			if (weaponSelection == 2)
-				display.timeline.playAnimation("power");
-			if (weaponSelection == 3)
-				display.timeline.playAnimation("power2");
-			display.timeline.frameRate = 1 / 15;
-		} else if (collision.isTouching(Sides.BOTTOM) && collision.velocityX == 0) {
-			display.timeline.playAnimation("idle");
-		} else if (collision.isTouching(Sides.BOTTOM) && collision.velocityX != 0) {
-			display.timeline.playAnimation("run");
-		} else if (!collision.isTouching(Sides.BOTTOM) && collision.velocityY < 0) {
-			display.timeline.playAnimation("jump");
-		} else if (!collision.isTouching(Sides.BOTTOM) && collision.velocityY > 0) {
-			display.timeline.playAnimation("fall");
+		if (!dead) {
+			if (attacking) {
+				if (weaponSelection == 1)
+					display.timeline.playAnimation("sword");
+				if (weaponSelection == 2)
+					display.timeline.playAnimation("power");
+				if (weaponSelection == 3)
+					display.timeline.playAnimation("power2");
+				display.timeline.frameRate = 1 / 15;
+			} else if (collision.isTouching(Sides.BOTTOM) && collision.velocityX == 0) {
+				display.timeline.playAnimation("idle");
+			} else if (collision.isTouching(Sides.BOTTOM) && collision.velocityX != 0) {
+				display.timeline.playAnimation("run");
+			} else if (!collision.isTouching(Sides.BOTTOM) && collision.velocityY < 0) {
+				display.timeline.playAnimation("jump");
+			} else if (!collision.isTouching(Sides.BOTTOM) && collision.velocityY > 0) {
+				display.timeline.playAnimation("fall");
+			}
 		}
 	}
 }

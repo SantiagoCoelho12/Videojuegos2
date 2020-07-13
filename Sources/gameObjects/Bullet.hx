@@ -24,6 +24,7 @@ class Bullet extends Entity {
 		collision.height = 4;
 
 		collision.userData = this;
+		
 
 		display.scaleX = display.scaleY = 0.08;
 		//display.offsetY= -5;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="1.3.5" orientation="orthogonal" renderorder="right-down" width="128" height="36" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="28">
+<map version="1.2" tiledversion="1.3.5" orientation="orthogonal" renderorder="right-down" width="128" height="36" tilewidth="16" tileheight="16" infinite="0" nextlayerid="4" nextobjectid="112">
  <tileset firstgid="1" name="lvl2ground" tilewidth="16" tileheight="16" tilecount="900" columns="30">
   <image source="lvl2ground.png" width="480" height="480"/>
  </tileset>
@@ -43,10 +43,7 @@
 752,753,752,753,752,753,752,753,752,753,752,753,752,753,752,753,752,753,752,753,752,753,752,753,752,753,752,753,752,752,753,752,753,752,753,752,753,752,753,752,753,752,753,752,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782,783,782
 </data>
  </layer>
- <layer id="3" name="noCollision" width="128" height="36">
-  <properties>
-   <property name="noCollision" value=""/>
-  </properties>
+ <layer id="2" name="noCollision" width="128" height="36">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3221225671,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3221225641,0,0,0,0,0,0,
@@ -86,97 +83,96 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="6" name="Capa de Objetos 1">
-  <object id="11" type="enemy" x="1749" y="63.6667" width="20.0003" height="16.6667">
+ <objectgroup id="3" name="Capa de Objetos 1">
+  <object id="99" type="enemy" x="1732.82" y="59.0738" width="20.0003" height="16.6667">
    <properties>
     <property name="spawnX" value="1749"/>
     <property name="spawnY" value="50"/>
     <property name="type" value="2"/>
    </properties>
   </object>
-  <object id="12" type="enemy" x="905" y="58.6667" width="20.0003" height="16.6667">
+  <object id="100" type="enemy" x="888.822" y="54.0738" width="20.0003" height="16.6667">
    <properties>
     <property name="spawnX" value="905"/>
     <property name="spawnY" value="50"/>
     <property name="type" value="2"/>
    </properties>
   </object>
-  <object id="13" type="enemy" x="772" y="114.667" width="20.0003" height="16.6667">
+  <object id="101" type="enemy" x="755.822" y="110.074" width="20.0003" height="16.6667">
    <properties>
     <property name="spawnX" value="774"/>
     <property name="spawnY" value="112"/>
     <property name="type" value="2"/>
    </properties>
   </object>
-  <object id="14" type="enemy" x="773" y="164.667" width="20.0003" height="16.6667">
+  <object id="102" type="enemy" x="756.822" y="160.074" width="20.0003" height="16.6667">
    <properties>
     <property name="spawnX" value="774"/>
     <property name="spawnY" value="164"/>
     <property name="type" value="164"/>
    </properties>
   </object>
-  <object id="15" type="enemy" x="775" y="207.667" width="20.0003" height="16.6667">
+  <object id="103" type="enemy" x="758.822" y="203.074" width="20.0003" height="16.6667">
    <properties>
     <property name="spawnX" value="774"/>
     <property name="spawnY" value="207"/>
     <property name="type" value="2"/>
    </properties>
   </object>
-  <object id="16" type="enemy" x="772" y="250.667" width="20.0003" height="16.6667">
+  <object id="104" type="enemy" x="755.822" y="246.074" width="20.0003" height="16.6667">
    <properties>
     <property name="spawnX" value="774"/>
     <property name="spawnY" value="250"/>
     <property name="type" value="2"/>
    </properties>
   </object>
-  <object id="17" type="enemy" x="772.333" y="302.667" width="20.0003" height="16.6667">
+  <object id="105" type="enemy" x="756.155" y="298.074" width="20.0003" height="16.6667">
    <properties>
     <property name="spawnX" value="774"/>
     <property name="spawnY" value="302"/>
     <property name="type" value="2"/>
    </properties>
   </object>
-  <object id="18" type="enemy" x="774" y="357.667" width="20.0003" height="16.6667">
+  <object id="106" type="enemy" x="757.822" y="353.074" width="20.0003" height="16.6667">
    <properties>
     <property name="spawnX" value="774"/>
     <property name="spawnY" value="355"/>
     <property name="type" value="2"/>
    </properties>
   </object>
-  <object id="19" type="enemy" x="683" y="55.3333" width="38.0003" height="25.3333">
+  <object id="107" type="enemy" x="666.822" y="50.7404" width="38.0003" height="25.3333">
    <properties>
     <property name="spawnX" value="683"/>
     <property name="spawnY" value="50"/>
     <property name="type" value="1"/>
    </properties>
   </object>
-  <object id="20" type="enemy" x="1100" y="54.3333" width="38.0003" height="25.3333">
+  <object id="108" type="enemy" x="1083.82" y="49.7404" width="38.0003" height="25.3333">
    <properties>
     <property name="spawnX" value="1100"/>
     <property name="spawnY" value="50"/>
     <property name="type" value="1"/>
    </properties>
   </object>
-  <object id="21" type="enemy" x="1298" y="49.3333" width="38.0003" height="25.3333">
+  <object id="109" type="enemy" x="1281.82" y="44.7404" width="38.0003" height="25.3333">
    <properties>
     <property name="spawnX" value="1298"/>
     <property name="spawnY" value="50"/>
     <property name="type" value="1"/>
    </properties>
   </object>
-  <object id="22" type="enemy" x="1535" y="42.3333" width="38.0003" height="25.3333">
+  <object id="110" type="enemy" x="1518.82" y="37.7404" width="38.0003" height="25.3333">
    <properties>
     <property name="spawnX" value="1535"/>
     <property name="spawnY" value="40"/>
     <property name="type" value="1"/>
    </properties>
   </object>
-  <object id="23" type="spawn" x="34.5" y="433.75" width="27" height="20.5">
+  <object id="111" type="spawn" x="42.3934" y="422.473" width="27" height="20.5">
    <properties>
     <property name="spawnX" value="40"/>
     <property name="spawnY" value="430"/>
    </properties>
   </object>
-  <object id="25" type="mana" x="771" y="509"/>
  </objectgroup>
 </map>

@@ -1,6 +1,5 @@
 package states;
 
-import kha.math.Random;
 import com.collision.platformer.CollisionGroup;
 import com.collision.platformer.CollisionBox;
 import com.loading.basicResources.FontLoader;
@@ -8,18 +7,13 @@ import com.gEngine.display.Text;
 import gameObjects.Bullet;
 import com.gEngine.display.StaticLayer;
 import com.gEngine.GEngine;
-import js.html.Audio;
 import kha.audio1.AudioChannel;
-import js.html.Console;
 import com.collision.platformer.ICollider;
 import com.loading.basicResources.ImageLoader;
 import com.collision.platformer.CollisionEngine;
-import com.gEngine.helper.Screen;
 import gameObjects.Player;
 import gameObjects.Enemy;
 import com.loading.basicResources.SpriteSheetLoader;
-import com.gEngine.display.Blend;
-import com.gEngine.shaders.ShRetro;
 import kha.Assets;
 import com.loading.basicResources.JoinAtlas;
 import com.loading.basicResources.DataLoader;
@@ -69,7 +63,7 @@ class GameState extends State {
 	override function load(resources:Resources) {
 		resources.add(new DataLoader(Assets.blobs.lvl1_tmxName));
 		resources.add(new DataLoader(Assets.blobs.lvl2_tmxName));
-		resources.add(new DataLoader(Assets.blobs.lvl3_tmxName));
+		resources.add(new DataLoader(Assets.blobs.finalLvl_tmxName));
 		var atlas:JoinAtlas = new JoinAtlas(4000, 4000);
 		atlas.add(new FontLoader(Assets.fonts.ArialName, 27));
 		atlas.add(new TilesheetLoader("lvl2ground", 16, 16, 0));
@@ -85,7 +79,7 @@ class GameState extends State {
 		atlas.add(new ImageLoader("hand"));
 		atlas.add(new SpriteSheetLoader("player", 50, 37, 0, [
 			Sequence.at("idle", 0, 3), Sequence.at("run", 8, 13), Sequence.at("jump", 15, 17), Sequence.at("sword", 42, 48), Sequence.at("sword2", 49, 52),
-			Sequence.at("sword3", 53, 58), Sequence.at("power", 89, 91), Sequence.at("dead", 65, 68), Sequence.at("power2", 102, 108),
+			Sequence.at("sword3", 53, 58), Sequence.at("power", 89, 91), Sequence.at("death", 65, 65), Sequence.at("power2", 102, 108),
 			Sequence.at("fall", 22, 23)]));
 		atlas.add(new SpriteSheetLoader("mushroom", 150, 75, 0, [
 			Sequence.at("run", 4, 11),
@@ -99,6 +93,7 @@ class GameState extends State {
 			Sequence.at("death", 16, 19),
 			Sequence.at("attack", 20, 27)
 		]));
+		atlas.add(new SpriteSheetLoader("bubble", 182, 182, 0, [Sequence.at("shield", 0, 14)]));
 		resources.add(atlas);
 	}
 
@@ -113,7 +108,7 @@ class GameState extends State {
 		lvlControl();
 
 		stage.defaultCamera().limits(0, 0, worldMap.widthIntTiles * 16, (worldMap.heightInTiles * 16));
-		player = new Player(spawnX, spawnY, simulationLayer,playerHeart,playerMana);
+		player = new Player(spawnX, spawnY, simulationLayer, playerHeart, playerMana);
 		addChild(player);
 		setHUD();
 		GGD.simulationLayer = simulationLayer;
@@ -122,7 +117,7 @@ class GameState extends State {
 	}
 
 	inline function lvlControl() {
-		//lvl = 1;
+		// lvl = 3;
 		if (lvl == 1) {
 			worldMap = new Tilemap("lvl1_tmx", 1);
 			worldMap.init(function(layerTilemap, tileLayer) {
@@ -140,7 +135,7 @@ class GameState extends State {
 				simulationLayer.addChild(layerTilemap.createDisplay(tileLayer, new Sprite("lvl2ground")));
 			}, parseMapObjects);
 		} else if (lvl == 3) {
-			worldMap = new Tilemap("lvl3_tmx", 1);
+			worldMap = new Tilemap("finalLvl_tmx", 1);
 			worldMap.init(function(layerTilemap, tileLayer) {
 				if (!tileLayer.properties.exists("noCollision")) {
 					layerTilemap.createCollisions(tileLayer);
@@ -233,8 +228,9 @@ class GameState extends State {
 		CollisionEngine.collide(player.gun.bulletsCollisions, worldMap.collision, destroyBullet);
 		for (i in 0...enemies.length) {
 			CollisionEngine.collide(enemies[i].gun.bulletsCollisions, worldMap.collision, destroyBullet);
-			CollisionEngine.collide(enemies[i].gun.bulletsCollisions, player.collision, characterDeath);
+			CollisionEngine.overlap(enemies[i].gun.bulletsCollisions, player.collision, characterDeath);
 			CollisionEngine.collide(enemies[i].gun.bulletsCollisions, player.shield.collision, destroyBullet);
+			enemyDeathControl(enemies[i]);
 		}
 		CollisionEngine.collide(enemyCollision, player.collision, characterDeath);
 		CollisionEngine.collide(enemyCollision, player.gun.bulletsCollisions, killEnemy);
@@ -242,7 +238,31 @@ class GameState extends State {
 		CollisionEngine.overlap(enemyCollision, player.sword.collision, killEnemy);
 		CollisionEngine.overlap(manaCollision, player.collision, manaPotionCollision);
 		CollisionEngine.overlap(nextLvlCollision, player.collision, nextLvl);
+		playerDeathControl();
 		reset();
+	}
+
+	public inline function playerDeathControl() {
+		if (player.isDead() && player.deathComplete()) {
+			killThePlayer();
+		}
+	}
+
+	public inline function enemyDeathControl(enemy:Enemy) {
+		if (enemy.isDead() && enemy.deathComplete()) {
+			enemy.endDeath();
+		}
+	}
+
+	public inline function killThePlayer() {
+		player.hearts--;
+		if (player.hearts == 0) {
+			audio.stop();
+			changeState(new GameOver(lvl, score));
+		} else {
+			audio.stop();
+			changeState(new GameState(lvl, score, player.hearts, player.mana));
+		}
 	}
 
 	public function destroyBullet(a:ICollider, b:ICollider) {
@@ -256,22 +276,12 @@ class GameState extends State {
 	}
 
 	public function characterDeath(a:ICollider, b:ICollider) {
-		death();
-	}
-
-	private inline function death() {
-		player.hearts--;
-		if (player.hearts == 0) {
-			audio.stop();
-			changeState(new GameOver(lvl, score));
-		} else {
-			audio.stop();
-			changeState(new GameState(lvl, score, player.hearts, player.mana));
-		}
+		player.die();
 	}
 
 	public function killEnemy(a:ICollider, b:ICollider) {
 		var enemy:Enemy = cast a.userData;
+		enemy.die();
 		enemy.explode();
 	}
 
@@ -318,7 +328,7 @@ class GameState extends State {
 
 	private inline function fallControl() {
 		if (player.y > 1000) {
-			death();
+			killThePlayer();
 		}
 	}
 
