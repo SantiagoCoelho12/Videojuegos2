@@ -479,11 +479,11 @@ class GameState extends State {
 		}
 	}
 
-	#if DEBUGDRAW
+	/*#if DEBUGDRAW
 	override function draw(framebuffer:kha.Canvas) {
 		super.draw(framebuffer);
 		var camera = stage.defaultCamera();
 		CollisionEngine.renderDebug(framebuffer, camera);
 	}
-	#end
+	#end*/
 }

@@ -189,6 +189,7 @@ class Player extends Entity {
 		super.die();
 		display.timeline.playAnimation("death", false);
 		display.timeline.frameRate = 1 / 30;
+		stopAudio();
 		tryToReproduceAudio(Assets.sounds.DIE, false, 0.5);
 	}
 
