@@ -46,7 +46,9 @@ class Shield extends Entity {
 		display.scaleX = display.scaleY = 0.5;
 		display.offsetX = -24;
 		display.offsetY = -27;
-		collision.x = GGD.player.collision.x - 13;
-		collision.y = GGD.player.collision.y - 6;
+		collision.x = GGD.player.x - 22;
+		collision.y = GGD.player.y - 35;
+		display.x = collision.x;
+		display.y = collision.y;
 	}
 }

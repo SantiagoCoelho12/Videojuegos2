@@ -1,5 +1,6 @@
 package gameObjects;
 
+import kha.Sound;
 import kha.Assets;
 import kha.audio1.AudioChannel;
 import js.html.Audio;
@@ -21,6 +22,10 @@ class Player extends Entity {
 	static var MANAPOTION = 50;
 
 	var SPEED:Float = 160;
+	var audio:AudioChannel = new kha.audio2.AudioChannel(false);
+	var movementAudio:AudioChannel = new kha.audio2.AudioChannel(false);
+	var reproducingAudio:Bool = false;
+	var movementControl:Float = 0;
 	var JUMP:Float = -360;
 	var currentLayer:Layer;
 	var display:Sprite;
@@ -43,6 +48,7 @@ class Player extends Entity {
 		collision = new CollisionBox();
 		velocity = new FastVector2(SPEED, SPEED);
 		gun = new Gun();
+		collision.userData = this;
 		addChild(gun);
 		sword = new Sword();
 		addChild(sword);
@@ -63,8 +69,8 @@ class Player extends Entity {
 	}
 
 	inline function setCollisions(X:Float, Y:Float) {
-		collision.accelerationY = 800;
-		collision.maxVelocityY = 800;
+		collision.accelerationY = 900;
+		collision.maxVelocityY = 900;
 		collision.width = 16;
 		collision.height = 30;
 		collision.x = X;
@@ -130,20 +136,25 @@ class Player extends Entity {
 				gun.shoot(collision.x, collision.y + collision.height * 0.5, display.scaleX, 0);
 				attacking = true;
 				mana -= FIREBALLMANA;
+				tryToReproduceAudio(Assets.sounds.FIREBALL, false);
 			}
 		} else if (Input.i.isMouseDown()) {
 			if (weaponSelection == SWORD) {
 				sword.attack(collision.x + collision.width, collision.y, display.scaleX);
 				attacking = true;
+				tryToReproduceAudio(Assets.sounds.KNIFE, false);
 			}
 			if (weaponSelection == SHIELD) {
 				shield.getCover();
 				attacking = true;
+				tryToReproduceAudio(Assets.sounds.SHIELD, true);
 			}
 		} else {
 			attacking = false;
 			sword.endAttack();
 			shield.stopShield();
+			if (!dead)
+				stopAudio();
 		}
 		if (attacking) {
 			SPEED = 10;
@@ -152,10 +163,24 @@ class Player extends Entity {
 		}
 	}
 
+	inline function stopAudio() {
+		audio.stop();
+		reproducingAudio = false;
+	}
+
+	inline function tryToReproduceAudio(sound:Sound, loop:Bool,volume:Float = 1) {
+		if (!reproducingAudio) {
+			audio = kha.audio1.Audio.play(sound, loop);
+			audio.volume = volume;
+			reproducingAudio = true;
+		}
+	}
+
 	public override function die() {
 		super.die();
 		display.timeline.playAnimation("death", false);
 		display.timeline.frameRate = 1 / 30;
+		tryToReproduceAudio(Assets.sounds.DIE, false,0.5);
 	}
 
 	public function deathComplete():Bool {

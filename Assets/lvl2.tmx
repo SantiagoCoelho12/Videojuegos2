@@ -114,25 +114,11 @@
     <property name="type" value="2"/>
    </properties>
   </object>
-  <object id="6" type="enemy" x="1785.33" y="524.667" width="22.6666" height="23.3333">
+  <object id="6" type="enemy" x="1834.66" y="522.667" width="22.6666" height="23.3333">
    <properties>
     <property name="spawnX" value="1783"/>
     <property name="spawnY" value="544"/>
     <property name="type" value="2"/>
-   </properties>
-  </object>
-  <object id="7" type="enemy" x="1913.34" y="534.666" width="24" height="16">
-   <properties>
-    <property name="spawnX" value="1888"/>
-    <property name="spawnY" value="544"/>
-    <property name="type" value="1"/>
-   </properties>
-  </object>
-  <object id="8" type="enemy" x="1791.33" y="386" width="22.0003" height="19.3333">
-   <properties>
-    <property name="spawnX" value="1795"/>
-    <property name="spawnY" value="400"/>
-    <property name="type" value="1"/>
    </properties>
   </object>
   <object id="9" type="enemy" x="1603.99" y="516" width="22.667" height="30.6663">

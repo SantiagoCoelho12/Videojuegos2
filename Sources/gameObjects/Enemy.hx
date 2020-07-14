@@ -1,5 +1,7 @@
 package gameObjects;
 
+import kha.audio1.AudioChannel;
+import kha.Assets;
 import paths.PathWalker;
 import paths.PathWalker.PlayMode;
 import paths.LinearPath;
@@ -19,8 +21,8 @@ class Enemy extends Entity {
 	var currentLayer:Layer;
 	var collisionGroup:CollisionGroup;
 	var shootCounter:Float = 0;
-	var gunTimer:Int;
-	var pathWalker:PathWalker;
+	var gunTimer:Int = 0;
+	var attackCounter:Float = 0;
 
 	public var collision:CollisionBox;
 	public var gun:Gun;
@@ -30,8 +32,6 @@ class Enemy extends Entity {
 		type = _type;
 		collision = new CollisionBox();
 		gun = new Gun();
-		var path = new LinearPath(new FastVector2(X - (40 * Math.random() + 5), 0), new FastVector2(X + (800 * Math.random() + 10), 0));
-		pathWalker = PathWalker.fromSpeed(path, 40, PlayMode.Pong);
 		currentLayer = layer;
 		gunTimer = timer;
 		collisionGroup = _collisions;
@@ -65,7 +65,6 @@ class Enemy extends Entity {
 		display.timeline.playAnimation("idle");
 		display.timeline.frameRate = 1 / 6;
 		display.scaleX = display.scaleY = 0.7;
-
 		if (type == 1) {
 			display.offsetX = -60;
 			display.offsetY = -11;
@@ -87,6 +86,14 @@ class Enemy extends Entity {
 	override function die() {
 		super.die();
 		display.timeline.playAnimation("death", false);
+		display.timeline.frameRate = 1 / 6;
+		gun.destroyAllBullets();
+		var deathSound:AudioChannel;
+		if (type == 1)
+			deathSound = kha.audio1.Audio.play(Assets.sounds.SKELETONDEATH, false);
+		else
+			deathSound = kha.audio1.Audio.play(Assets.sounds.MUSHROOMDIE, false);
+		deathSound.volume = 0.3;
 	}
 
 	public function deathComplete():Bool {
@@ -97,25 +104,24 @@ class Enemy extends Entity {
 		super.update(dt);
 		collision.update(dt);
 		if (type == 1) {
-			pathWalker.update(dt);
 			if (calculateDistance(GGD.player.collision.x, collision.x, GGD.player.collision.y, collision.y) < 20000) {
 				followPlayer();
-			} else {
-				collision.x = pathWalker.x - collision.width / 2;
-				var deltaX:Float = collision.x - collision.lastX;
-				if (deltaX > 0) {
-					display.scaleX = Math.abs(display.scaleX);
-				} else {
-					display.scaleX = -Math.abs(display.scaleX);
-				}
 			}
 		}
 		if (type == 2) {
 			shootCounter += dt;
+			attackCounter += dt;
 			if (shootCounter > gunTimer) {
 				gun.shoot(collision.x, collision.y, 1, 0);
 				gun.shoot(collision.x, collision.y, -1, 0);
 				shootCounter = 0;
+				display.timeline.playAnimation("attack", false);
+				display.timeline.frameRate = 1 / 22;
+				attackCounter = 0;
+			}
+			if (attackCounter > 0.55) {
+				display.timeline.playAnimation("idle", false);
+				display.timeline.frameRate = 1 / 6;
 			}
 		}
 	}
@@ -137,17 +143,10 @@ class Enemy extends Entity {
 		dir.setFrom(dir.normalized());
 		dir.setFrom(dir.mult(100));
 		collision.velocityX = dir.x;
-		// collision.velocityY=dir.y;
 	}
 
 	override function render() {
 		display.x = collision.x + collision.width * 0.5;
 		display.y = collision.y;
-		if (!dead) {
-			if (type == 1) {
-				display.timeline.playAnimation("run");
-			} else
-				display.timeline.playAnimation("idle");
-		}
 	}
 }

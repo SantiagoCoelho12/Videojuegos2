@@ -1,8 +1,9 @@
 package states;
 
+import kha.audio1.Audio;
+import kha.audio1.AudioChannel;
 import com.loading.basicResources.ImageLoader;
 import com.gEngine.display.Sprite;
-import kha.audio1.AudioChannel;
 import kha.Color;
 import kha.input.KeyCode;
 import com.gEngine.display.Text;
@@ -23,7 +24,7 @@ class StartingMenu extends State {
 	var rectangle:RectangleDisplay;
 	var start:Text;
 	var soundFlag:Bool = true;
-
+	
 	override function load(resources:Resources) {
 		var atlas:JoinAtlas = new JoinAtlas(2048, 2048);
 		atlas.add(new ImageLoader("RUNZER"));
@@ -43,9 +44,7 @@ class StartingMenu extends State {
 		var instructions = new Text(Assets.fonts.ArialName);
 		instructions.x = GEngine.virtualWidth * 0.4;
 		instructions.y = GEngine.virtualHeight * 0.75;
-
 		instructions.text = "HOW TO PLAY:\n\n-Move: W A S D \n-Hit:  Right click (Keep pressed)\n-Change Weapon:  1 2 3";
-
 		layer.addChild(instructions);
 		stage.addChild(layer);
 	}
@@ -75,7 +74,8 @@ class StartingMenu extends State {
 			start.offsetY = -0.5;
 			if (Input.i.isMouseReleased()) {
 				var beep:AudioChannel = kha.audio1.Audio.play(Assets.sounds.START);
-				changeState(new GameState(1,0));
+				beep.volume = 0.7;
+				changeState(new GameState(1, 0));
 			}
 		} else {
 			start.color = Color.fromBytes(116, 132, 65);

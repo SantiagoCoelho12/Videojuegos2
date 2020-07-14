@@ -126,7 +126,7 @@
     <property name="type" value="1"/>
    </properties>
   </object>
-  <object id="8" type="mana" x="1755" y="335"/>
+  <object id="8" type="mana" x="1754.5" y="354.5"/>
   <object id="9" type="enemy" x="1697" y="473.667" width="25.3337" height="22">
    <properties>
     <property name="spawnX" value="1697"/>

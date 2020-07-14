@@ -13,6 +13,7 @@ import com.loading.basicResources.ImageLoader;
 import com.collision.platformer.CollisionEngine;
 import gameObjects.Player;
 import gameObjects.Enemy;
+import gameObjects.Boss;
 import com.loading.basicResources.SpriteSheetLoader;
 import kha.Assets;
 import com.loading.basicResources.JoinAtlas;
@@ -51,6 +52,8 @@ class GameState extends State {
 	var lvl:Int;
 	var playerHeart:Int;
 	var playerMana:Int;
+	var lvl3Flag:Bool = false;
+	var boss:Boss;
 
 	public function new(lvl:Int, score:Float, _playerHeart:Int = 5, _playerMana:Int = 100) {
 		super();
@@ -61,11 +64,11 @@ class GameState extends State {
 	}
 
 	override function load(resources:Resources) {
-		lvl = 2;
+		lvl = 3;
 		resources.add(new DataLoader(Assets.blobs.lvl1_tmxName));
 		resources.add(new DataLoader(Assets.blobs.lvl2_tmxName));
-		resources.add(new DataLoader(Assets.blobs.finalLvl_tmxName));
-		var atlas:JoinAtlas = new JoinAtlas(4000, 4000);
+		resources.add(new DataLoader(Assets.blobs.copy_tmxName));
+		var atlas:JoinAtlas = new JoinAtlas(4100, 4100);
 		atlas.add(new FontLoader(Assets.fonts.ArialName, 27));
 		atlas.add(new TilesheetLoader("lvl2ground", 16, 16, 0));
 		atlas.add(new TilesheetLoader("lvl1TileSet", 16, 16, 0));
@@ -97,6 +100,11 @@ class GameState extends State {
 			Sequence.at("death", 16, 19),
 			Sequence.at("attack", 20, 27)
 		]));
+		atlas.add(new SpriteSheetLoader("wizard", 80, 80, 0, [
+			Sequence.at("idle", 0, 9),
+			Sequence.at("death", 10, 19),
+			Sequence.at("run", 20, 25)
+		]));
 		atlas.add(new SpriteSheetLoader("bubble", 182, 182, 0, [Sequence.at("shield", 0, 14)]));
 		resources.add(atlas);
 	}
@@ -106,13 +114,13 @@ class GameState extends State {
 		simulationLayer = new Layer();
 		enemyCollision = new CollisionGroup();
 		enemies = new Array<Enemy>();
-		score = 0;
 		lvlControl();
 		cameraSettings();
 		createPlayer();
 		setHUD();
 		setGGD();
 		stage.addChild(simulationLayer);
+		stage.addChild(hudLayer);
 	}
 
 	inline function setGGD() {
@@ -127,7 +135,7 @@ class GameState extends State {
 
 	inline function cameraSettings() {
 		stage.defaultCamera().limits(0, 0, worldMap.widthIntTiles * 16, (worldMap.heightInTiles * 16));
-		stage.defaultCamera().scale = 1.7;
+		stage.defaultCamera().scale = 2;
 	}
 
 	inline function lvlControl() {
@@ -139,7 +147,8 @@ class GameState extends State {
 				}
 				simulationLayer.addChild(layerTilemap.createDisplay(tileLayer, new Sprite("lvl1TileSet")));
 			}, parseMapObjects);
-		} else if (lvl == 2) {
+		}
+		if (lvl == 2) {
 			worldMap = new Tilemap("lvl2_tmx", 1);
 			worldMap.init(function(layerTilemap, tileLayer) {
 				if (!tileLayer.properties.exists("noCollision")) {
@@ -147,8 +156,9 @@ class GameState extends State {
 				}
 				simulationLayer.addChild(layerTilemap.createDisplay(tileLayer, new Sprite("lvl2ground")));
 			}, parseMapObjects);
-		} else if (lvl == 3) {
-			worldMap = new Tilemap("finalLvl_tmx", 1);
+		}
+		if (lvl == 3) {
+			worldMap = new Tilemap("copy_tmx", 1);
 			worldMap.init(function(layerTilemap, tileLayer) {
 				if (!tileLayer.properties.exists("noCollision")) {
 					layerTilemap.createCollisions(tileLayer);
@@ -164,24 +174,25 @@ class GameState extends State {
 			var background = new Sprite("lvl1Background");
 			background.smooth = true;
 			backgraundLayer.addChild(background);
-			audio = kha.audio1.Audio.play(Assets.sounds.FOREST, true);
+			audio = kha.audio1.Audio.play(Assets.sounds.lvl1Music, true);
+			audio.volume = 0.5;
 		} else if (lvl == 2) {
 			var background = new Sprite("lvl2Background");
 			background.smooth = true;
 			backgraundLayer.addChild(background);
 			audio = kha.audio1.Audio.play(Assets.sounds.FOREST, true);
 		} else if (lvl == 3) {
-			var background = new Sprite("lvl2Background");
-			background.smooth = true;
-			backgraundLayer.addChild(background);
-			audio = kha.audio1.Audio.play(Assets.sounds.FOREST, true);
+			/*var background = new Sprite("lvl2Background");
+				background.smooth = true;
+				backgraundLayer.addChild(background); */
+			audio = kha.audio1.Audio.play(Assets.sounds.LVL3, true);
 		}
 		stage.addChild(backgraundLayer);
 	}
 
 	inline function setHUD() {
 		hudLayer = new StaticLayer();
-		stage.addChild(hudLayer);
+		// hudLayer.z=-1;
 		var heart = new Sprite("heart");
 		heart.scaleX = heart.scaleY = 0.27;
 		heart.x = GEngine.virtualWidth * 0.005;
@@ -245,14 +256,30 @@ class GameState extends State {
 
 	override function update(dt:Float) {
 		super.update(dt);
-		stage.defaultCamera().setTarget(player.collision.x, player.collision.y - 133);
+		stage.defaultCamera().setTarget(player.collision.x, player.collision.y);
 		score += dt;
+		if (lvl == 3) {
+			lvl3Control();
+			winCondition();
+		}
 		updateHUD();
 		fallControl();
 		coliisionsControl();
 		playerDeathControl();
 		reset();
 	}
+
+	inline function lvl3Control() {
+		if (player.x >= 909 && !lvl3Flag) {
+			audio.stop();
+			audio = kha.audio1.Audio.play(Assets.sounds.BOSS, true);
+			audio.volume = 0.6;
+			lvl3Flag = true;
+			stage.defaultCamera().scale = 1.8;
+		}
+	}
+
+	inline function winCondition() {}
 
 	inline function coliisionsControl() {
 		CollisionEngine.collide(player.collision, worldMap.collision);
@@ -268,8 +295,13 @@ class GameState extends State {
 		CollisionEngine.collide(enemyCollision, player.gun.bulletsCollisions, killEnemyAndDestroyBullet);
 		CollisionEngine.collide(enemyCollision, player.shield.collision);
 		CollisionEngine.overlap(enemyCollision, player.sword.collision, killEnemy);
-		CollisionEngine.overlap(manaCollision, player.collision, manaPotionCollision);
+		CollisionEngine.collide(manaCollision, player.collision, manaPotionCollision);
 		CollisionEngine.overlap(nextLvlCollision, player.collision, nextLvl);
+		if (lvl == 3) {
+			// CollisionEngine.collide(boss.collision, worldMap.collision);
+			// CollisionEngine.collide(player.sword.collision, boss.collision);
+			// CollisionEngine.collide(boss.gun.bulletsCollisions, player.collision);
+		}
 	}
 
 	public inline function playerDeathControl() {
@@ -291,7 +323,7 @@ class GameState extends State {
 			changeState(new GameOver(lvl, score));
 		} else {
 			audio.stop();
-			changeState(new GameState(lvl, score, player.hearts, player.mana));
+			changeState(new GameState(lvl, score, player.hearts));
 		}
 	}
 
@@ -391,6 +423,14 @@ class GameState extends State {
 					spawnX = Std.parseFloat(x);
 					spawnY = Std.parseFloat(y);
 				}
+				if (object.type == "boss") {
+					var x = object.properties.get("spawnX");
+					var y = object.properties.get("spawnY");
+					var eX = Std.parseFloat(x);
+					var eY = Std.parseFloat(y);
+					var boss:Boss = new Boss(eX, eY, simulationLayer);
+					addChild(boss);
+				}
 				if (object.type == "nextLvl") {
 					var sign = new Sprite("nextlvl");
 					sign.scaleX = sign.scaleY = 0.05;
@@ -435,12 +475,11 @@ class GameState extends State {
 			default:
 		}
 	}
-
-	#if DEBUGDRAW
-	override function draw(framebuffer:kha.Canvas) {
-		super.draw(framebuffer);
-		var camera = stage.defaultCamera();
-		CollisionEngine.renderDebug(framebuffer, camera);
-	}
-	#end
+	/*#if DEBUGDRAW
+		override function draw(framebuffer:kha.Canvas) {
+			super.draw(framebuffer);
+			var camera = stage.defaultCamera();
+			CollisionEngine.renderDebug(framebuffer, camera);
+		}
+		#end */
 }
