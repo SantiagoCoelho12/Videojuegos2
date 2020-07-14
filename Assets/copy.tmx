@@ -136,10 +136,11 @@
     <property name="type" value="1"/>
    </properties>
   </object>
-  <object id="33" type="boss" x="1192" y="517" width="25.3337" height="22">
+  <object id="33" type="enemy" x="1192" y="517" width="25.3337" height="22">
    <properties>
     <property name="spawnX" value="1192"/>
     <property name="spawnY" value="517"/>
+    <property name="type" value="3"/>
    </properties>
   </object>
  </objectgroup>

@@ -1,5 +1,7 @@
 package gameObjects;
 
+import paths.BezierPath;
+import paths.ComplexPath;
 import kha.audio1.AudioChannel;
 import kha.Assets;
 import paths.PathWalker;
@@ -23,6 +25,11 @@ class Enemy extends Entity {
 	var shootCounter:Float = 0;
 	var gunTimer:Int = 0;
 	var attackCounter:Float = 0;
+	var direction:Int = 1;
+	var hitpoints:Float = 4;
+	var flag:Bool = true;
+	var pathWalker:PathWalker;
+	var bossFightStarted:Bool = false;
 
 	public var collision:CollisionBox;
 	public var gun:Gun;
@@ -37,9 +44,15 @@ class Enemy extends Entity {
 		collisionGroup = _collisions;
 		if (type == 1) {
 			display = new Sprite("skeleton");
-		} else {
+		} else if (type == 2) {
 			display = new Sprite("mushroom");
 			addChild(gun);
+		} else {
+			display = new Sprite("wizard");
+			addChild(gun);
+			var path = new ComplexPath(getPaths());
+			pathWalker = PathWalker.fromSpeed(path, 60, PlayMode.Loop);
+			gunTimer = 3;
 		}
 		setCollisions(X, Y, type);
 		setDisplay(type);
@@ -50,14 +63,19 @@ class Enemy extends Entity {
 	inline function setCollisions(X:Float, Y:Float, _type:Float) {
 		collision.x = X;
 		collision.y = Y;
-		collision.accelerationY = 800;
 		collision.userData = this;
 		if (type == 1) {
+			collision.accelerationY = 800;
 			collision.width = 17;
 			collision.height = 35;
-		} else {
+		} else if (type == 2) {
+			collision.accelerationY = 800;
 			collision.width = 17;
 			collision.height = 22;
+		} else {
+			collision.accelerationY = 0;
+			collision.width = 22;
+			collision.height = 40;
 		}
 	}
 
@@ -70,9 +88,13 @@ class Enemy extends Entity {
 		if (type == 1) {
 			display.offsetX = -78;
 			display.offsetY = -80;
-		} else {
+		} else if (type == 2) {
 			display.offsetX = -75;
 			display.offsetY = -30;
+		} else {
+			display.scaleX = display.scaleY = 1.2;
+			display.offsetX = -30;
+			display.offsetY = -20;
 		}
 	}
 
@@ -137,6 +159,27 @@ class Enemy extends Entity {
 				display.timeline.frameRate = 1 / 6;
 			}
 		}
+		if (type == 3) {
+			if (bossFightStarted) {
+				shootCounter += dt;
+				pathWalker.update(dt);
+				collision.x = pathWalker.x - collision.width / 2;
+				collision.y = pathWalker.y - collision.height;
+				if (shootCounter > gunTimer) {
+					gun.shoot(collision.x, collision.y, -1, -1);
+					gun.shoot(collision.x, collision.y, 0, -1);
+					gun.shoot(collision.x, collision.y, 1, -1);
+					gun.shoot(collision.x, collision.y, 1, 0);
+					gun.shoot(collision.x, collision.y, 1, 1);
+					gun.shoot(collision.x, collision.y, 0, 1);
+					gun.shoot(collision.x, collision.y, -1, 1);
+					gun.shoot(collision.x, collision.y, -1, 0);
+					gun.shoot(collision.x, collision.y, 0.5, 0.5);
+					gun.shoot(collision.x, collision.y, -0.5, 0.5);
+					shootCounter = 0;
+				}
+			}
+		}
 	}
 
 	inline function calculateDistance(x2:Float, x1:Float, y2:Float, y1:Float):Float {
@@ -170,4 +213,33 @@ class Enemy extends Entity {
 			}
 		}
 	}
+
+	public function isBoss():Bool {
+		return this.type == 3;
+	}
+
+	public function startBossFight() {
+		bossFightStarted = true;
+	}
+
+	inline function getPaths():Array<Path> {
+		var paths = new Array<Path>();
+		paths.push(new LinearPath(new FastVector2(867, 530), new FastVector2(867, 520)));
+		paths.push(new LinearPath(new FastVector2(867, 520), new FastVector2(867, 530)));
+		paths.push(new LinearPath(new FastVector2(867, 530), new FastVector2(867, 520)));
+		paths.push(new LinearPath(new FastVector2(867, 520), new FastVector2(867, 530)));
+		paths.push(new LinearPath(new FastVector2(867, 530), new FastVector2(867, 520)));
+		paths.push(new LinearPath(new FastVector2(867, 520), new FastVector2(867, 530)));
+		paths.push(new BezierPath(new FastVector2(867, 530), new FastVector2(1053, 290), new FastVector2(1312, 290), new FastVector2(1461, 530)));
+		paths.push(new LinearPath(new FastVector2(1461, 530), new FastVector2(1461, 520)));
+		paths.push(new LinearPath(new FastVector2(1461, 520), new FastVector2(1461, 530)));
+		paths.push(new LinearPath(new FastVector2(1461, 530), new FastVector2(1461, 520)));
+		paths.push(new LinearPath(new FastVector2(1461, 520), new FastVector2(1461, 530)));
+		paths.push(new LinearPath(new FastVector2(1461, 530), new FastVector2(1461, 520)));
+		paths.push(new LinearPath(new FastVector2(1461, 520), new FastVector2(1461, 530)));
+		paths.push(new BezierPath(new FastVector2(1461, 530), new FastVector2(1420, 313), new FastVector2(910, 380), new FastVector2(867, 530)));
+		return paths;
+	}
+
+	public function shieldCollision() {}
 }

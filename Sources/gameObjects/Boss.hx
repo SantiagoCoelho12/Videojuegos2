@@ -46,7 +46,7 @@ class Boss extends Entity {
         collision.x = 0;
 		counter += dt;
 		if (counter > pause) {
-            collision.x += 200 * direction;
+            collision.velocityX += 200 * direction;
             display.scaleX = Math.abs(display.scaleX)*direction;
 			if (collision.isTouching(Sides.RIGHT) || collision.isTouching(Sides.RIGHT))
 				direction *= -1;

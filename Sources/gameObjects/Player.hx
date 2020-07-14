@@ -32,6 +32,7 @@ class Player extends Entity {
 	var velocity:FastVector2;
 	var attacking:Bool = false;
 	var weaponSelection:Float = 1;
+	var manaControl:Float;
 
 	public var mana:Int;
 	public var sword:Sword;
@@ -101,11 +102,11 @@ class Player extends Entity {
 
 	override function update(dt:Float):Void {
 		super.update(dt);
-		movement();
+		movement(dt);
 		collision.update(dt);
 	}
 
-	private inline function movement() {
+	private inline function movement(dt:Float) {
 		collision.velocityX = 0;
 		if (Input.i.isKeyCodeDown(KeyCode.A) && (!attacking || attacking && weaponSelection == SWORD)) {
 			collision.velocityX = -SPEED;
@@ -144,18 +145,26 @@ class Player extends Entity {
 				attacking = true;
 				tryToReproduceAudio(Assets.sounds.KNIFE, false);
 			}
-			if (weaponSelection == SHIELD) {
+			if (weaponSelection == SHIELD && mana > 2) {
+				if (manaControl == 0)
+					mana -= 4;
+				manaControl += dt;
 				shield.getCover();
 				attacking = true;
 				tryToReproduceAudio(Assets.sounds.SHIELD, true);
+				if (manaControl > 1)
+					manaControl = 0;
 			}
 		} else {
 			attacking = false;
 			sword.endAttack();
 			shield.stopShield();
+			manaControl = 0;
 			if (!dead)
 				stopAudio();
 		}
+		if (mana <= 1)
+			shield.stopShield();
 		if (attacking) {
 			SPEED = 10;
 		} else {
@@ -168,7 +177,7 @@ class Player extends Entity {
 		reproducingAudio = false;
 	}
 
-	inline function tryToReproduceAudio(sound:Sound, loop:Bool,volume:Float = 1) {
+	inline function tryToReproduceAudio(sound:Sound, loop:Bool, volume:Float = 1) {
 		if (!reproducingAudio) {
 			audio = kha.audio1.Audio.play(sound, loop);
 			audio.volume = volume;
@@ -180,7 +189,7 @@ class Player extends Entity {
 		super.die();
 		display.timeline.playAnimation("death", false);
 		display.timeline.frameRate = 1 / 30;
-		tryToReproduceAudio(Assets.sounds.DIE, false,0.5);
+		tryToReproduceAudio(Assets.sounds.DIE, false, 0.5);
 	}
 
 	public function deathComplete():Bool {
