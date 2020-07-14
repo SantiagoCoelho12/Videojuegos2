@@ -75,6 +75,8 @@ class GameState extends State {
 			atlas.add(new ImageLoader("lvl1Background"));
 		if (lvl == 2)
 			atlas.add(new ImageLoader("lvl2Background"));
+		if (lvl == 3)
+			atlas.add(new ImageLoader("lvl3Background"));
 		atlas.add(new ImageLoader("bullet"));
 		atlas.add(new ImageLoader("heart"));
 		atlas.add(new ImageLoader("mana"));
@@ -176,9 +178,9 @@ class GameState extends State {
 			backgraundLayer.addChild(background);
 			audio = kha.audio1.Audio.play(Assets.sounds.FOREST, true);
 		} else if (lvl == 3) {
-			/*var background = new Sprite("lvl2Background");
-				background.smooth = true;
-				backgraundLayer.addChild(background); */
+			var background = new Sprite("lvl3Background");
+			background.smooth = true;
+			backgraundLayer.addChild(background);
 			audio = kha.audio1.Audio.play(Assets.sounds.LVL3, true);
 		}
 		stage.addChild(backgraundLayer);
