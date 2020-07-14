@@ -1,5 +1,6 @@
 package states;
 
+import kha.audio1.AudioChannel;
 import gameObjects.Player;
 import com.gEngine.display.Sprite;
 import kha.Color;
@@ -20,6 +21,8 @@ class Win extends State {
 	var ship:Player;
 	var time:Float = 0;
 	var simulationLayer:Layer;
+	var audio:AudioChannel;
+
 
 	public function new(time:Float) {
 		super();
@@ -35,6 +38,7 @@ class Win extends State {
 	}
 
 	override function init() {
+		audio = kha.audio1.Audio.play(Assets.sounds.WIN, true);
 		winImg();
 		scoreText();
 		resetText();
@@ -98,6 +102,7 @@ class Win extends State {
 	override function update(dt:Float) {
 		super.update(dt);
 		if (Input.i.isKeyCodePressed(KeyCode.Return)) {
+			audio.stop();
 			changeState(new StartingMenu());
 		}
 	}

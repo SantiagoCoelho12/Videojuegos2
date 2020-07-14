@@ -128,13 +128,6 @@
     <property name="type" value="1"/>
    </properties>
   </object>
-  <object id="10" type="enemy" x="1951.34" y="267.334" width="19.3334" height="23.3334">
-   <properties>
-    <property name="spawnX" value="1940"/>
-    <property name="spawnY" value="190"/>
-    <property name="type" value="2"/>
-   </properties>
-  </object>
   <object id="11" type="enemy" x="1381.99" y="503.334" width="28.6667" height="34.667">
    <properties>
     <property name="spawnX" value="1381"/>

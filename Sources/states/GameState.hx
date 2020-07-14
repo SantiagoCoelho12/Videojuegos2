@@ -53,6 +53,7 @@ class GameState extends State {
 	var playerMana:Int;
 	var lvl3Flag:Bool = false;
 	var boss:Enemy;
+	var winTimer:Float;
 
 	public function new(lvl:Int, score:Float, _playerHeart:Int = 5, _playerMana:Int = 100) {
 		super();
@@ -63,7 +64,6 @@ class GameState extends State {
 	}
 
 	override function load(resources:Resources) {
-		lvl =3;
 		resources.add(new DataLoader(Assets.blobs.lvl1_tmxName));
 		resources.add(new DataLoader(Assets.blobs.lvl2_tmxName));
 		resources.add(new DataLoader(Assets.blobs.copy_tmxName));
@@ -99,7 +99,8 @@ class GameState extends State {
 		atlas.add(new SpriteSheetLoader("wizard", 80, 80, 0, [
 			Sequence.at("idle", 0, 9),
 			Sequence.at("death", 10, 19),
-			Sequence.at("run", 20, 25)
+			Sequence.at("run", 20, 25),
+			Sequence.at("hit", 10, 11)
 		]));
 		atlas.add(new SpriteSheetLoader("bubble", 182, 182, 0, [Sequence.at("shield", 0, 14)]));
 		resources.add(atlas);
@@ -125,7 +126,7 @@ class GameState extends State {
 	}
 
 	inline function createPlayer() {
-		player = new Player(860, 120, simulationLayer, playerHeart, playerMana);
+		player = new Player(spawnX, spawnY, simulationLayer, playerHeart, playerMana);
 		addChild(player);
 	}
 
@@ -256,7 +257,7 @@ class GameState extends State {
 		score += dt;
 		if (lvl == 3) {
 			lvl3Control();
-			winCondition();
+			winCondition(dt);
 		}
 		updateHUD();
 		fallControl();
@@ -272,11 +273,20 @@ class GameState extends State {
 			audio.volume = 0.6;
 			lvl3Flag = true;
 			stage.defaultCamera().scale = 1.8;
-			if(boss != null) boss.startBossFight();
+			if (boss != null)
+				boss.startBossFight();
 		}
 	}
 
-	inline function winCondition() {}
+	inline function winCondition(dt:Float) {
+		if (boss != null && boss.isDead()) {
+			winTimer+=dt;
+			if (winTimer > 1.5) {
+				audio.stop();
+				changeState(new Win(score));
+			}
+		}
+	}
 
 	inline function coliisionsControl() {
 		CollisionEngine.collide(player.collision, worldMap.collision);
@@ -290,7 +300,7 @@ class GameState extends State {
 		}
 		CollisionEngine.collide(enemyCollision, player.collision, characterDeath);
 		CollisionEngine.collide(enemyCollision, player.gun.bulletsCollisions, killEnemyAndDestroyBullet);
-		CollisionEngine.collide(enemyCollision, player.shield.collision,collisionForBoss);
+		CollisionEngine.collide(enemyCollision, player.shield.collision, collisionForBoss);
 		CollisionEngine.overlap(enemyCollision, player.sword.collision, killEnemy);
 		CollisionEngine.collide(manaCollision, player.collision, manaPotionCollision);
 		CollisionEngine.overlap(nextLvlCollision, player.collision, nextLvl);
@@ -318,9 +328,10 @@ class GameState extends State {
 			changeState(new GameState(lvl, score, player.hearts));
 		}
 	}
+
 	public function collisionForBoss(a:ICollider, b:ICollider) {
 		var enemy:Enemy = cast a.userData;
-		if(enemy.isBoss()){
+		if (enemy.isBoss()) {
 			enemy.shieldCollision();
 		}
 	}
@@ -408,7 +419,7 @@ class GameState extends State {
 	inline function reset() {
 		if (Input.i.isKeyCodePressed(KeyCode.Escape)) {
 			audio.stop();
-			changeState(new StartingMenu());
+			changeState(new GameState(lvl, score, player.hearts));
 		}
 	}
 
@@ -444,7 +455,8 @@ class GameState extends State {
 					var enemyType = Std.parseFloat(enemyTypeString);
 					var timer = Std.int(5 * Math.random());
 					var enemy = new Enemy(eX, eY, enemyType, enemyCollision, simulationLayer, timer + 1);
-					if(enemy.isBoss()) boss = enemy;
+					if (enemy.isBoss())
+						boss = enemy;
 					enemies.push(enemy);
 					addChild(enemy);
 				}

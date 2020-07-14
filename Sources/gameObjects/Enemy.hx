@@ -26,7 +26,7 @@ class Enemy extends Entity {
 	var gunTimer:Int = 0;
 	var attackCounter:Float = 0;
 	var direction:Int = 1;
-	var hitpoints:Float = 4;
+	var hitpoints:Float = 0;
 	var flag:Bool = true;
 	var pathWalker:PathWalker;
 	var bossFightStarted:Bool = false;
@@ -53,6 +53,7 @@ class Enemy extends Entity {
 			var path = new ComplexPath(getPaths());
 			pathWalker = PathWalker.fromSpeed(path, 60, PlayMode.Loop);
 			gunTimer = 3;
+			hitpoints = 3;
 		}
 		setCollisions(X, Y, type);
 		setDisplay(type);
@@ -74,7 +75,7 @@ class Enemy extends Entity {
 			collision.height = 22;
 		} else {
 			collision.accelerationY = 0;
-			collision.width = 22;
+			collision.width = 30;
 			collision.height = 40;
 		}
 	}
@@ -99,29 +100,47 @@ class Enemy extends Entity {
 	}
 
 	public function explode():Void {
-		collision.removeFromParent();
-		collisionGroup.remove(collision);
+		if (isDead()) {
+			collision.removeFromParent();
+			collisionGroup.remove(collision);
+		}
 	}
 
 	public function endDeath() {
-		display.removeFromParent();
+		if (isDead()) {
+			display.removeFromParent();
+		}
 	}
 
 	override function die() {
-		super.die();
-		display.timeline.playAnimation("death", false);
-		display.timeline.frameRate = 1 / 6;
-		gun.destroyAllBullets();
-		var deathSound:AudioChannel;
-		if (type == 1)
-			deathSound = kha.audio1.Audio.play(Assets.sounds.SKELETONDEATH, false);
-		else
-			deathSound = kha.audio1.Audio.play(Assets.sounds.MUSHROOMDIE, false);
-		deathSound.volume = 0.3;
+		if (hitpoints == 0) {
+			super.die();
+			display.timeline.playAnimation("death", false);
+			display.timeline.frameRate = 1 / 6;
+			gun.destroyAllBullets();
+			var deathSound:AudioChannel;
+			if (type == 1)
+				deathSound = kha.audio1.Audio.play(Assets.sounds.SKELETONDEATH, false);
+			else if (type == 2)
+				deathSound = kha.audio1.Audio.play(Assets.sounds.MUSHROOMDIE, false);
+			else
+				deathSound = kha.audio1.Audio.play(Assets.sounds.BOSSDIE, false);
+			if (!isBoss())
+				deathSound.volume = 0.3;
+			else
+				deathSound.volume = 0.8;
+		} else {
+			hitpoints--;
+			display.timeline.playAnimation("hit", false);
+			display.timeline.frameRate = 1 / 30;
+		}
 	}
 
 	public function deathComplete():Bool {
-		return display.timeline.isComplete();
+		if (isDead())
+			return display.timeline.isComplete();
+		else
+			return false;
 	}
 
 	override function update(dt:Float):Void {
@@ -166,6 +185,7 @@ class Enemy extends Entity {
 				collision.x = pathWalker.x - collision.width / 2;
 				collision.y = pathWalker.y - collision.height;
 				if (shootCounter > gunTimer) {
+					var shootSound = kha.audio1.Audio.play(Assets.sounds.BLAZE, false);
 					gun.shoot(collision.x, collision.y, -1, -1);
 					gun.shoot(collision.x, collision.y, 0, -1);
 					gun.shoot(collision.x, collision.y, 1, -1);
@@ -175,7 +195,11 @@ class Enemy extends Entity {
 					gun.shoot(collision.x, collision.y, -1, 1);
 					gun.shoot(collision.x, collision.y, -1, 0);
 					gun.shoot(collision.x, collision.y, 0.5, 0.5);
+					gun.shoot(collision.x, collision.y, 0.7, 0.7);
+					gun.shoot(collision.x, collision.y, 0.3, 0.3);
 					gun.shoot(collision.x, collision.y, -0.5, 0.5);
+					gun.shoot(collision.x, collision.y, -0.7, 0.7);
+					gun.shoot(collision.x, collision.y, -0.3, 0.3);
 					shootCounter = 0;
 				}
 			}
@@ -204,8 +228,9 @@ class Enemy extends Entity {
 	override function render() {
 		display.x = collision.x + collision.width * 0.5;
 		display.y = collision.y;
-		if (type == 1 && !dead) {
-			if (collision.velocityX == 0) {
+		display.timeline.frameRate = 1 / 6;
+		if ((type == 1 || isBoss()) && !dead) {
+			if (collision.velocityX == 0 && (display.timeline.currentAnimation == "hit" && display.timeline.isComplete())) {
 				display.timeline.playAnimation("idle");
 			}
 			if (collision.velocityX != 0) {
