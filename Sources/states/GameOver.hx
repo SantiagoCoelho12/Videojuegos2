@@ -30,41 +30,58 @@ class GameOver extends State {
 
 	override function load(resources:Resources) {
 		var atlas:JoinAtlas = new JoinAtlas(2048, 2048);
-		// atlas.add(new ImageLoader("gameOver"));
+		atlas.add(new ImageLoader("gameOver"));
+		atlas.add(new ImageLoader("enter"));
 		atlas.add(new FontLoader(Assets.fonts.ArialName, 27));
 		resources.add(atlas);
 	}
 
 	override function init() {
-		//	gameOverImg();
+		gameOverImg();
 		scoreText();
 		resetText();
+		enterImg();
 	}
 
 	inline function gameOverImg() {
 		var image = new Sprite("gameOver");
-		image.x = GEngine.virtualWidth * 0.5 - image.width() * 0.5;
+		image.x = GEngine.virtualWidth * 0.8 - image.width() * 0.5;
 		image.y = 100;
-		image.scaleX = image.scaleY = 1.5;
+		image.scaleX = image.scaleY = 0.5;
+		image.offsetX = -100;
+		stage.addChild(image);
+	}
+
+	inline function enterImg() {
+		var image = new Sprite("enter");
+		image.x = GEngine.virtualWidth * 0.50;
+		image.y = GEngine.virtualHeight * 0.70;
+		image.scaleX = image.scaleY = 0.5;
 		image.offsetX = -100;
 		stage.addChild(image);
 	}
 
 	inline function scoreText() {
 		var textScore = new Text(Assets.fonts.ArialName);
-		textScore.text = "Time played " + score +"\n You died at level "+ lvl;
+		textScore.text = "Time played: " + score + " seconds" + "\n   You died at level "+ lvl;
 		textScore.x = GEngine.virtualWidth / 2 - textScore.width() * 0.63;
 		textScore.y = GEngine.virtualHeight * 0.46;
-		textScore.color = Color.fromBytes(128, 61, 117);
+		textScore.color = Color.Red;
 		stage.addChild(textScore);
 	}
 
 	inline function resetText() {
 		var replay = new Text(Assets.fonts.ArialName);
-		replay.x = GEngine.virtualWidth * 0.22;
-		replay.y = GEngine.virtualHeight * 0.52;
-		replay.color = Color.fromBytes(128, 61, 117);
-		replay.text = "Press enter to play again!";
+		var press = new Text(Assets.fonts.ArialName);
+		press.x = GEngine.virtualWidth * 0.37;
+		press.y = GEngine.virtualHeight * 0.70;
+		press.color = Color.Red;
+		replay.x = GEngine.virtualWidth * 0.49;
+		replay.y = GEngine.virtualHeight * 0.70;
+		replay.color = Color.Red;
+		press.text = "Press";
+		replay.text = "to play again!";
+		stage.addChild(press);
 		stage.addChild(replay);
 	}
 
