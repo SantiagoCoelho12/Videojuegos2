@@ -75,6 +75,8 @@ class GameState extends State {
 			atlas.add(new ImageLoader("lvl1Background"));
 		if (lvl == 2)
 			atlas.add(new ImageLoader("lvl2Background"));
+		if (lvl == 3)
+			atlas.add(new ImageLoader("lvl3Background"));
 		atlas.add(new ImageLoader("bullet"));
 		atlas.add(new ImageLoader("heart"));
 		atlas.add(new ImageLoader("mana"));
@@ -93,11 +95,7 @@ class GameState extends State {
 			Sequence.at("death", 16, 19),
 			Sequence.at("attack", 20, 27)
 		]));
-		atlas.add(new SpriteSheetLoader("skeleton", 150, 150, 0, [
-			Sequence.at("idle", 0, 3),
-			Sequence.at("death", 4,7),
-			Sequence.at("run", 8, 11)
-		]));
+		atlas.add(new SpriteSheetLoader("skeleton", 150, 150, 0, [Sequence.at("idle", 0, 3), Sequence.at("death", 4, 7), Sequence.at("run", 8, 11)]));
 		atlas.add(new SpriteSheetLoader("wizard", 80, 80, 0, [
 			Sequence.at("idle", 0, 9),
 			Sequence.at("death", 10, 19),
@@ -180,9 +178,9 @@ class GameState extends State {
 			backgraundLayer.addChild(background);
 			audio = kha.audio1.Audio.play(Assets.sounds.FOREST, true);
 		} else if (lvl == 3) {
-			/*var background = new Sprite("lvl2Background");
-				background.smooth = true;
-				backgraundLayer.addChild(background); */
+			var background = new Sprite("lvl3Background");
+			background.smooth = true;
+			backgraundLayer.addChild(background);
 			audio = kha.audio1.Audio.play(Assets.sounds.LVL3, true);
 		}
 		stage.addChild(backgraundLayer);
@@ -473,11 +471,12 @@ class GameState extends State {
 			default:
 		}
 	}
+
 	#if DEBUGDRAW
-		override function draw(framebuffer:kha.Canvas) {
-			super.draw(framebuffer);
-			var camera = stage.defaultCamera();
-			CollisionEngine.renderDebug(framebuffer, camera);
-		}
-		#end
+	override function draw(framebuffer:kha.Canvas) {
+		super.draw(framebuffer);
+		var camera = stage.defaultCamera();
+		CollisionEngine.renderDebug(framebuffer, camera);
+	}
+	#end
 }
