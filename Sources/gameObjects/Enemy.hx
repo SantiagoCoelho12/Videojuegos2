@@ -65,12 +65,14 @@ class Enemy extends Entity {
 		display.timeline.playAnimation("idle");
 		display.timeline.frameRate = 1 / 6;
 		display.scaleX = display.scaleY = 0.7;
+		display.pivotX = display.width() * 0.5;
+		display.pivotY = display.height();
 		if (type == 1) {
-			display.offsetX = -60;
-			display.offsetY = -11;
+			display.offsetX = -78;
+			display.offsetY = -80;
 		} else {
-			display.offsetX = -55;
-			display.offsetY = -7;
+			display.offsetX = -75;
+			display.offsetY = -30;
 		}
 	}
 
@@ -104,8 +106,19 @@ class Enemy extends Entity {
 		super.update(dt);
 		collision.update(dt);
 		if (type == 1) {
-			if (calculateDistance(GGD.player.collision.x, collision.x, GGD.player.collision.y, collision.y) < 20000) {
-				followPlayer();
+			collision.velocityX = 0;
+			attackCounter += dt;
+			if (!dead) {
+				if (calculateDistance(GGD.player.collision.x, collision.x, GGD.player.collision.y, collision.y) < 20000) {
+					followPlayer();
+					if (collision.velocityX > 0) {
+						display.scaleX = Math.abs(display.scaleX);
+						display.offsetX = -78;
+					} else {
+						display.scaleX = -Math.abs(display.scaleX);
+						display.offsetX = -72;
+					}
+				}
 			}
 		}
 		if (type == 2) {
@@ -148,5 +161,13 @@ class Enemy extends Entity {
 	override function render() {
 		display.x = collision.x + collision.width * 0.5;
 		display.y = collision.y;
+		if (type == 1 && !dead) {
+			if (collision.velocityX == 0) {
+				display.timeline.playAnimation("idle");
+			}
+			if (collision.velocityX != 0) {
+				display.timeline.playAnimation("run");
+			}
+		}
 	}
 }

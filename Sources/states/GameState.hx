@@ -64,7 +64,6 @@ class GameState extends State {
 	}
 
 	override function load(resources:Resources) {
-		lvl = 3;
 		resources.add(new DataLoader(Assets.blobs.lvl1_tmxName));
 		resources.add(new DataLoader(Assets.blobs.lvl2_tmxName));
 		resources.add(new DataLoader(Assets.blobs.copy_tmxName));
@@ -94,11 +93,10 @@ class GameState extends State {
 			Sequence.at("death", 16, 19),
 			Sequence.at("attack", 20, 27)
 		]));
-		atlas.add(new SpriteSheetLoader("skeleton", 154, 83, 0, [
-			Sequence.at("run", 0, 3),
-			Sequence.at("idle", 12, 15),
-			Sequence.at("death", 16, 19),
-			Sequence.at("attack", 20, 27)
+		atlas.add(new SpriteSheetLoader("skeleton", 150, 150, 0, [
+			Sequence.at("idle", 0, 3),
+			Sequence.at("death", 4,7),
+			Sequence.at("run", 8, 11)
 		]));
 		atlas.add(new SpriteSheetLoader("wizard", 80, 80, 0, [
 			Sequence.at("idle", 0, 9),
@@ -475,11 +473,11 @@ class GameState extends State {
 			default:
 		}
 	}
-	/*#if DEBUGDRAW
+	#if DEBUGDRAW
 		override function draw(framebuffer:kha.Canvas) {
 			super.draw(framebuffer);
 			var camera = stage.defaultCamera();
 			CollisionEngine.renderDebug(framebuffer, camera);
 		}
-		#end */
+		#end
 }
