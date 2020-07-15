@@ -9,7 +9,7 @@
 
 ## Como jugar
 * Moviento: WASD
-  * Al saltar se puede apretar la D para caer mas rapido.
+  * Al saltar se puede apretar la S para caer mas rapido.
 * Accion: click derecho
 * Cambiar armas: 1 2 3 
   * *1* *Espada*: Mantener apretado para ejecutar la accion. Durante esta accion el movimiento se ve reducido. No se puede saltar
