@@ -10,7 +10,7 @@
 * Moviento: WASD
   * Al saltar se puede apretar la D para caer mas rapido.
 * Accion: click derecho
-* Cambiar armas: 1 2 3
+* Cambiar armas: 1 2 3 
   * *1* *Espada*: Mantener apretado para ejecutar la accion. Durante esta accion el movimiento se ve reducido. No se puede saltar
   * *2* *Fireball* (20 de mana): Apretar una vez para ejecutar la accion. Si se mantiene apretado el click se disparara una vez y se desactivaran las acciones de moviento.
   * *3* *Escudo* (5 de mana/s): Te proteje de las fireballs enemigas o al tocar un enemigo. Mantener apretado para usar. No hay acciones de moviento durante su uso.
@@ -28,5 +28,5 @@
 ## Programacion de videojuegos 2020
  * Santiago Coelho - 204113
  * Keshet Hertz - 209074
- 
+ Link al juego: https://santiagocoelho12.github.io/
 *Gracias por Jugar!*
