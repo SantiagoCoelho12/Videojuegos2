@@ -25,6 +25,8 @@
  ## Consumibles
  * Mana potion - +50 de mana.
  
+ ## Aspectos a mejorar
+ * Los enemigos se encuentran en una misma clase. Implementar clases hijas, especificas de cada enemigo.
 
 ## Programacion de videojuegos 2020
  * Santiago Coelho - 204113
