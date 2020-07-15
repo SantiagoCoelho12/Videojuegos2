@@ -28,5 +28,6 @@
 ## Programacion de videojuegos 2020
  * Santiago Coelho - 204113
  * Keshet Hertz - 209074
- Link al juego: https://santiagocoelho12.github.io/
+ 
+* Link al juego: https://santiagocoelho12.github.io/
 *Gracias por Jugar!*
