@@ -3,6 +3,7 @@
 ## IMPORTANTE: Bugs conocidos
 * Al caer sobre un enemigo, el juego queda en estado inconcluso.
 * A veces los mushroom no tienen animacion al morir.
+* Si un esqueleto te mata, el re spawn puede demorar.
 * Si el juego queda en estado inconcluso se puede apretar el esc para reiniciar el nivel.
 ### *Si al iniciar el juego la musica se escucha mal o en loop apretar esc para reiniciar*
 
