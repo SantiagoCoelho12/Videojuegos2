@@ -28,7 +28,7 @@
  ## Aspectos a mejorar
  * Los enemigos se encuentran en una misma clase. Implementar clases hijas, especificas de cada enemigo.
 
-## Programacion de videojuegos 2020
+## Programacion de videojuegos 2020 - Universidad ORT Uruguay
  * Santiago Coelho - 204113
  * Keshet Hertz - 209074
  
